@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Units">
+      <UniqueIdentifier>{a7f5aee1-2927-4144-8631-9465325f6daf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Buildings">
+      <UniqueIdentifier>{d2b4d3e4-6f46-4870-b5fd-fe74faea19f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\stuff">
+      <UniqueIdentifier>{4f98349e-3563-4a7f-9bb8-be7e7a41f743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Buildings">
+      <UniqueIdentifier>{96755d09-eb67-473b-adbf-c0dd332e14bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Units">
+      <UniqueIdentifier>{0a1d3a3b-5443-490f-88fe-666f3e9be961}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stuff">
+      <UniqueIdentifier>{a4dc1a17-7f83-4157-9a9a-1a587c6c2ffe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Units\UtilityUnits">
+      <UniqueIdentifier>{c4d80c4e-3389-4320-be98-70f409559882}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Units\CombatUnits">
+      <UniqueIdentifier>{0d336026-3fd5-4312-8d0d-50a5d287ef43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Units\CombatUnits">
+      <UniqueIdentifier>{79574d8c-3705-4e0a-9ab3-1ca385809e8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Units\UtilityUnits">
+      <UniqueIdentifier>{3dc85fea-b107-4fa8-a227-1fda8329b7d4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Building.h">
+      <Filter>Header Files\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="Unit.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="vectors.h">
+      <Filter>Header Files\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header Files\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="Barracks.h">
+      <Filter>Header Files\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="Factory.h">
+      <Filter>Header Files\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="Airport.h">
+      <Filter>Header Files\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator.h">
+      <Filter>Header Files\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="UtilityUnit.h">
+      <Filter>Header Files\Units\UtilityUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="Worker.h">
+      <Filter>Header Files\Units\UtilityUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="CombatUnit.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="Soldier.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="MineralField.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Targetable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AirTransporter.h">
+      <Filter>Header Files\Units\UtilityUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildingGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyFlags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Building.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="Unit.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files\stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="rts.cpp">
+      <Filter>Source Files\stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="Airport.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="Barracks.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="Factory.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="CombatUnit.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="Soldier.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="UtilityUnit.cpp">
+      <Filter>Source Files\Units\UtilityUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="Worker.cpp">
+      <Filter>Source Files\Units\UtilityUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="MineralField.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Targetable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AirTransporter.cpp">
+      <Filter>Source Files\Units\UtilityUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildingGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyFlags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
