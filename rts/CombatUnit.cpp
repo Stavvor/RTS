@@ -32,6 +32,7 @@ void CombatUnit::attack(shared_ptr<Targetable>  target)
 
 			target->takeDamage(target->getHitPoints());
 			target->onDead();
+			this->setTarget(NULL);
 		}
 	}
 	else {

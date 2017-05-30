@@ -173,6 +173,14 @@ bool BuildingGrid::testNeighbours(int size, int x, int z)
 		break;
 	}
 }
+bool  BuildingGrid::testColision(shared_ptr<Unit> u, int x, int z)
+{
+	if(occupying[x][z] == NULL|| occupying[x][z] == u)
+	{
+		return true;
+	}
+	else return false;
+}
 void  BuildingGrid::occupy(shared_ptr<Unit> u, int x, int z)
 {
 	occupying[x][z]=u;

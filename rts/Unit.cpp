@@ -34,10 +34,12 @@ Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ICooldown, float 
 {
 	upgrades = new Upgrades(weaponUpgrades, armorUpgrades);
 	isPickedUp = false;
-	target = NULL;
+	target.reset();
 	movePoints = 0;
 	destination = { 0,0,0 };
 	cooldown = 0;
+	dir = { 0,0,0 };
+	isMoving = false;
 }
 
 Unit::Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigned int IhitPoints, float Fspeed, float Frange, unsigned int* armorUpgrades)
@@ -50,9 +52,10 @@ Unit::Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigne
 	{
 	upgrades = new Upgrades(0, armorUpgrades); //TODO mozna zamienic na NULL zeby bylo ladniej ale musze byc pewien ze utlityUnit nigdy nie sprobuje uzyc tego wskaznika
 	isPickedUp = false;
-	target = NULL;
+	target.reset();
 	destination = { 0,0,0 };
 	cooldown = 0;
+	isMoving = false;
 }
 
 //Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ImaxCooldown, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
@@ -183,3 +186,12 @@ Unit::~Unit()
 }
 
 
+void Unit::setIsMoving(bool v)
+{
+	isMoving = v;
+}
+
+bool Unit::getIsMoving()
+{
+	return isMoving;
+}

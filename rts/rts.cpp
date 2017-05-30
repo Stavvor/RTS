@@ -405,15 +405,31 @@ void OnTimer(int id) {
 			vec3 currentPos = vec[i]->getPosition();
 			vec3 destination = vec[i]->getDestination();
 			currentPos = { currentPos.x, 0.0f, currentPos.z };
-
+			/*
 			if (currentPos.x > destination.x) currentPos.x -= 0.05f;
 			if (currentPos.x < destination.x) currentPos.x += 0.05f;
 
 			if (currentPos.z > destination.z) currentPos.z -= 0.05f;
 			if (currentPos.z < destination.z) currentPos.z += 0.05f;
+			*/
 
-			if (destination.x != 0 && destination.y != 0 && destination.z != 0)
-				vec[i]->setPosition(currentPos.x, 0, currentPos.z);
+			
+				float x = vec[i]->dir.x;
+				float y = 0.0f;
+				float z = vec[i]->dir.z;
+				vec3 newPos = { currentPos.x+x*0.2,currentPos.y+y*0.2,currentPos.z+z*0.2};
+
+				if (abs(currentPos.x-destination.x)>0.1 || abs(currentPos.z - destination.z)>0.1)
+				{
+					vec[i]->setPosition(newPos);
+					vec[i]->setIsMoving(true);
+				}
+				else
+				{
+					vec[i]->setIsMoving(false);
+				}
+					
+			//TODO pooprawic to zeby jakos wygladalo...
 		}
 	}
 		/*
@@ -500,6 +516,8 @@ void OnTimer(int id) {
 			float a = -0.05f;
 			playerCamera.dir.x = cos(b + a);
 			playerCamera.dir.z = sin(b + a);
+
+
 		}
 		//obrot w prawo
 		if (KeyFlags::keystate['e']) {
@@ -744,7 +762,15 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 		raycast(x, y, &destStart, &mouseLeftClickPos_start, &mouseLeftClickPos_end);
 		for (auto unit : player->getSelectedUnits())
 		{
+			if (unit->getTarget() != NULL)
+				unit->setTarget(NULL);
 			unit->setDestination(destStart);
+			unit->dir.x = unit->getDestination().x - unit->getPosition().x;
+			unit->dir.z = unit->getDestination().z - unit->getPosition().z;
+
+			float hyp = sqrt(unit->dir.x*unit->dir.x + unit->dir.z*unit->dir.z);
+			unit->dir.x /= hyp;
+			unit->dir.z /= hyp;
 		}
 
 		return;
@@ -946,10 +972,13 @@ void OnRender() {
 	{
 		if(!unit->getIsDead()){
 			vec3 temp = unit->getPosition();
-			if(unit->getName()=="Test")
+			if(unit->getName()=="Test")		//TODO przerobic
 				glColor3f(0.0f, 1.0f, 0.0f);
 			else
-				glColor3f(0.0f, 0.0f, 1.0f);
+				if(unit->getTarget()==NULL)
+					glColor3f(0.0f, 0.0f, 1.0f);
+				else
+					glColor3f(1.0f, 0.0f, 0.0f);
 			glPushMatrix();
 			glTranslatef(temp.x, temp.y, temp.z);
 			glutWireCube(1.0f);
@@ -960,7 +989,7 @@ void OnRender() {
 	{
 		if (!building->getIsDead()) {
 			vec3 temp = building->getPosition();
-			glColor3f(1.0f, 0.0f, 0.0f);
+			glColor3f(0.0f, 1.0f, 0.0f);
 			glPushMatrix();
 			glTranslatef(temp.x, temp.y, temp.z);
 			glutWireCube(4.0f);
@@ -1043,6 +1072,7 @@ void unitDetails(int)
 		cout << "unit[" << i << "] hitpoints " << unit->getHitPoints() << endl;
 		cout << "unit[" << i << "] this " << unit << endl;
 		cout << "unit[" << i << "] target " << unit->getTarget() << endl;
+		cout << "unit[" << i << "] destination " << unit->getDestination() << endl;
 		//cout << "unit[" << i << "] attackcooldown " << unit->getCooldown() << endl;
 		i++;
 	}
@@ -1076,6 +1106,11 @@ void posManager(int a)
 		vec3 pos=unit->getPosition();
 		int x = floor(pos.x);
 		int z = floor(pos.z);
+//		if(!player->grid->testColision(unit, x, z))
+//		{
+//			cout << "kolizja" << endl;
+//		}
+		//TODO rozwiazac kolizje; test dziala
 		if(x!= unit->getCurrentXPos() && z != unit->getCurrentZPos())
 		{
 			//player->grid->free(unit->getCurrentXPos(), unit->getCurrentZPos());
@@ -1100,7 +1135,7 @@ void posManager(int a)
 			player->grid->occupy(unit, x, z);
 			unit->setCurrentGridPos(x, z);
 		}
-		if (unit->getTarget() == NULL){
+		if (unit->getTarget() == NULL && !unit->getIsMoving()){
 			shared_ptr<Targetable>target = player->grid->searchTargets(x, z, unit->getRange());
 			if(target!=NULL)
 			{
@@ -1108,6 +1143,13 @@ void posManager(int a)
 				target->addToTargetedby(unit);//TODO
 			}
 		}
+		if (unit->getTarget() != NULL) {
+			if (!unit->targetInRange())
+			{
+				unit->setTarget(NULL);
+			}
+		}
+
 	}
 	
 	glutTimerFunc(20, posManager, 0);

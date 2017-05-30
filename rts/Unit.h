@@ -11,6 +11,8 @@ private:
 	bool isPickedUp;
 	int currentXpos;
 	int currentZpos;
+	bool isMoving;
+	
 public:
 	//Targetable* target;		//TODO roziwazac cel...
 	Unit();
@@ -18,7 +20,7 @@ public:
 	Unit(string name, string Stype,  vec3 position, unsigned int ICooldoown,  unsigned int hitPoints, float speed, float range, unsigned int* armorUpgrades);	//UtilityUnit constructor
 	//Unit(string Sname, string Stype, vec3 Vpos, unsigned int IAttackCooldown, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades);
 	string getName();
-	
+	vec3 dir;
 	unsigned int maxCooldown;
 	unsigned int getCooldown();
 	void updateCooldown(unsigned int value);
@@ -46,5 +48,7 @@ public:
 	int getCurrentXPos();
 	int getCurrentZPos();
 	void setCurrentGridPos(int x, int z);
+	void setIsMoving(bool);
+	bool getIsMoving();
 };
 
