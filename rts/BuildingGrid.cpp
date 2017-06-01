@@ -173,13 +173,38 @@ bool BuildingGrid::testNeighbours(int size, int x, int z)
 		break;
 	}
 }
-bool  BuildingGrid::testColision(shared_ptr<Unit> u, int x, int z)
+void  BuildingGrid::testColision(shared_ptr<Unit> u, int i, int j)
 {
-	if(occupying[x][z] == NULL|| occupying[x][z] == u)
-	{
-		return true;
+	int range = 1;
+	int row_limit = 99;
+	if (row_limit > 0) {
+		int column_limit = 99;
+		for (int x = max(0, i - range); x <= min(i + range, row_limit); x++) {
+			for (int y = max(0, j - range); y <= min(j + range, column_limit); y++) {
+				//if (x != i || y != j) {
+					//try {
+					if (occupying[x][y] != NULL&&occupying[x][y] != u)
+					{
+						//potencjalna kolizja
+						vec3 targetPos = occupying[x][y]->getPosition();
+						vec3 myPos = u->getPosition();
+						float distance = sqrt(pow((myPos.x - targetPos.x), 2) + pow((myPos.y - targetPos.y), 2) + pow((myPos.z - targetPos.z), 2));
+						if (distance < 0.75f) {//TODO uzaleznic od modelu
+							//u->setDestination();
+						}
+						
+						
+					}
+						
+					//}
+					//catch (int ex) {
+					;
+					//}
+
+				//}
+			}
+		}
 	}
-	else return false;
 }
 void  BuildingGrid::occupy(shared_ptr<Unit> u, int x, int z)
 {
@@ -198,13 +223,13 @@ shared_ptr<Targetable> BuildingGrid::searchTargets(int i, int j,float r)
 		for (int x = max(0, i - range); x <= min(i + range, row_limit); x++) {
 			for (int y = max(0, j - range); y <= min(j + range, column_limit); y++) {
 				if (x != i || y != j) {
-					try {
+					//try {
 						if (occupying[x][y] != NULL)
 							return occupying[x][y];
-					}
-					catch (int ex) {
+					//}
+					//catch (int ex) {
 						;
-					}
+					//}
 					
 				}
 			}

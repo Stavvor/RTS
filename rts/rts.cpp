@@ -1,9 +1,8 @@
 #include "stdafx.h"
 
+
 void attackCooldown(int);
-//void healCommand(int);
 void actionTimer(int);
-//void repairCommand(int);
 void unitDetails(int);
 void queueManager(int);
 void posManager(int a);
@@ -25,27 +24,60 @@ void OnMouseKeyUp(int button, int state, int x, int y);
 void MouseCords(int x, int y);
 void mouseWheel(int button, int dir, int x, int y);
 
-SCameraState playerCamera;
-				
-int mouseX;
-int mouseY;
-
-struct mousePos {
-	double x, y, z;
-};
-
 mousePos mouseLeftClickPos_start;
 mousePos mouseLeftClickPos_end;
 mousePos mouseLeftUpPos_start;
 mousePos mouseLeftUpPos_end;
+
+void raycast(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
+void raycastEnd(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
+
+void renderBitmapString(float x, float y, void *font, int num) {
+	const char *c;
+	glRasterPos2f(x, y);
+	string str=to_string(num);
+	const char* cstr=str.c_str();
+	for (c = cstr; *c != '\0'; c++) {
+		glutBitmapCharacter(font, *c);
+	}
+}
+
+void renderBitmapString(float x, float y, void *font, const char *string) {
+	const char *c;
+	glRasterPos2f(x, y);
+	for (c = string; *c != '\0'; c++) {
+		glutBitmapCharacter(font, *c);
+	}
+}
+
+int w, h;
+void setOrthographicProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, w, 0, h);
+	glScalef(1, -1, 1);
+	glTranslatef(0, -h, 0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void resetPerspectiveProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 vec3 destStart;
 vec3 destEnd;
-//
 Player* player;
 Targetable* mineral;
+SCameraState playerCamera;
 
-void raycast(int x, int y,vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
-void raycastEnd(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
+int mouseX;
+int mouseY;
+int oldTimeSinceStart = 0;
+
+
 
 int main(int argc, char**argv){
 
@@ -394,7 +426,7 @@ void OnKeyUp(unsigned char key, int x, int y) {
 
 // Aktualizacja stanu gry - wywo³ywana za poœrednictwem zdarzenia-timera.
 void OnTimer(int id) {
-
+	
 	// Chcemy, by ta funkcja zosta³a wywo³ana ponownie za 17ms.
 	glutTimerFunc(17, OnTimer, 0);
 
@@ -511,13 +543,12 @@ void OnTimer(int id) {
 		if (KeyFlags::keystate['w']) {
 			player->createWorker();
 		}
+	    /*
 		if (KeyFlags::keystate['q']) {
 			float b = atan2(playerCamera.dir.z, playerCamera.dir.x);
 			float a = -0.05f;
 			playerCamera.dir.x = cos(b + a);
 			playerCamera.dir.z = sin(b + a);
-
-
 		}
 		//obrot w prawo
 		if (KeyFlags::keystate['e']) {
@@ -526,6 +557,14 @@ void OnTimer(int id) {
 
 			playerCamera.dir.x = cos(b + a);
 			playerCamera.dir.z = sin(b + a);
+		}
+		*/
+		if (KeyFlags::keystate['s']) {
+			for (auto unit : player->getSelectedUnits())
+				unit->setDestination(unit->getPosition());
+		}
+		if (KeyFlags::keystate['q']) {
+			//TODO zmienic kursor do patrolu
 		}
 		/*	if (glutGetModifiers() == 2) {
 				switch (key)
@@ -646,7 +685,7 @@ void OnSpecialKeyPress(int key, int x, int y)
 		switch (key)
 		{
 		case GLUT_KEY_F1:
-			playerCamera = player->jumpToCameraHotkey(1);
+ 			playerCamera = player->jumpToCameraHotkey(1);
 			break;
 		case GLUT_KEY_F2:
 			playerCamera = player->jumpToCameraHotkey(2);
@@ -934,10 +973,40 @@ void mouseWheel(int button, int dir, int x, int y)
 
 void OnRender() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColor3d(0.902, 0.902, 0.980);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	setOrthographicProjection();
+	glPushMatrix();
 
+	int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+	int deltaTime = timeSinceStart - oldTimeSinceStart;
+
+	stringstream time;
+
+	oldTimeSinceStart = timeSinceStart;
 	
+	int secs = timeSinceStart / 1000;
+	int mins = timeSinceStart / 60000;
+	int hours = timeSinceStart / 3600000;
+
+	time << hours << "H:" << mins << "M:"<<secs<<"S";
+
+
+	const int font = (int)GLUT_BITMAP_9_BY_15;
+	
+	renderBitmapString(1600, 30, (void *)font,player->getResources());
+	renderBitmapString(1700, 30, (void *)font, player->getEnergy());
+	renderBitmapString(1800, 30, (void *)font, player->getSupplyToPrint().c_str());
+	renderBitmapString(1600, 60, (void *)font, "weapon upgrades");
+	renderBitmapString(1750, 60, (void *)font, player->getWeaponUpgrades());
+	renderBitmapString(1600, 90, (void *)font, "armor upgrades");
+	renderBitmapString(1750, 90, (void *)font, player->getArmorUpgrades());
+	renderBitmapString(200, 800, (void *)font, time.str().c_str());
+
+	resetPerspectiveProjection();
+
+	glPopMatrix();
 	gluLookAt(
 		playerCamera.pos.x, playerCamera.pos.y, playerCamera.pos.z, // Pozycja kamery
 		playerCamera.pos.x + playerCamera.dir.x, playerCamera.pos.y + playerCamera.dir.y, playerCamera.pos.z + playerCamera.dir.z, // Punkt na ktory patrzy kamera (pozycja + kierunek)
@@ -945,7 +1014,7 @@ void OnRender() {
 	);
 
 
-
+	
 	//siatka
 	for (int ix = -5; ix <= 5; ix += 1) {
 		for (int iz = -5; iz <= 5; iz += 1) {
@@ -1004,6 +1073,8 @@ void OnRender() {
 }
 
 void OnReshape(int width, int height) {
+	w = width;
+	h = height;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glViewport(0, 0, width, height);
@@ -1106,6 +1177,7 @@ void posManager(int a)
 		vec3 pos=unit->getPosition();
 		int x = floor(pos.x);
 		int z = floor(pos.z);
+		player->grid->testColision(unit, unit->getCurrentXPos(), unit->getCurrentZPos());
 //		if(!player->grid->testColision(unit, x, z))
 //		{
 //			cout << "kolizja" << endl;

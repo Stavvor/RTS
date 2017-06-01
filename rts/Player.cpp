@@ -8,6 +8,7 @@ Player::Player(string Sname)
 {
 	resources = 400;
 	energy = 100;
+	supply = 0;
 	weaponUpgrades = 0;
 	armorUpgrades = 0;
 }
@@ -45,6 +46,19 @@ unsigned int* Player::getWeaponUpgradesPtr()
 unsigned int* Player::getArmorUpgradesPtr()
 {
 	return &armorUpgrades;
+}
+
+unsigned Player::getSupply()
+{
+	return supply;
+}
+
+string Player::getSupplyToPrint()
+{
+	string output = to_string(supply);
+	output.append("/100");
+	output;
+	return output;
 }
 
 void Player::upgradeWeapons()
@@ -110,11 +124,13 @@ void Player::createWorker()
 	//inne budynki....
 	//myUnits.push_back(new Worker("Test", "Mechanical", { 0,0,0 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
 	myUnits.emplace_back(new Worker("Test", "Mechanical", { 0,0,0 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
+	supply++;//TODO ustawic limit, potencjalnie wagi jednostek
 }
 
 void Player::addNewUnit(Unit*temp)
 {
 	myUnits.emplace_back(temp);
+	supply++;//TODO ustawic limit, potencjalnie wagi jednostek
 }
 
 vector<shared_ptr<Unit>> Player::getMyUnits()
@@ -166,14 +182,10 @@ void Player::cleanDeadEntities()
 				player->grid->leave(myUnits.at(i)->getCurrentXPos(), myUnits.at(i)->getCurrentZPos());//TODO czyscimy wskazniki z gridu
 				myUnits.at(i).reset();
 				myUnits.erase(myUnits.begin() + i);
+				supply--;
 			}	
 		}
 	}
-}
-
-void Player::deathManager(Targetable*target)
-{
-
 }
 
 void Player::clearMemory()
@@ -194,3 +206,4 @@ Player::~Player()
 {
 	delete(grid);
 }
+

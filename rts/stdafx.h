@@ -15,7 +15,10 @@
 #include <GL/freeglut.h>		//#include <GL/glut.h> 
 #include <mutex>
 #include <memory>
+#include <sstream>
+
 //#include <windows.h>
+
 
 
 using namespace std;
@@ -40,6 +43,7 @@ using namespace std;
 #include "BuildingGrid.h"
 #include "Player.h"
 #include "AirTransporter.h"
+#include "MousePos.h"
 
 extern Player* player;
 

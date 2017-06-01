@@ -34,6 +34,9 @@ public:
 	unsigned int getArmorUpgrades();
 	unsigned int* getWeaponUpgradesPtr();
 	unsigned int* getArmorUpgradesPtr();
+	unsigned int getSupply();
+	string getSupplyToPrint();// latwiej dodac do wyswietlania "/"
+
 	void upgradeWeapons();
 	void upgradeArmor();
 
@@ -63,7 +66,6 @@ public:
 	void jumpToControlGroup(int);
 
 	void cleanDeadEntities();
-	void deathManager(Targetable*target);
 	void clearMemory();
 
 	~Player();

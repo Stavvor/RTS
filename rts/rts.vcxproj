@@ -173,6 +173,7 @@
     <ClInclude Include="BuildingGrid.h" />
     <ClInclude Include="KeyFlags.h" />
     <ClInclude Include="MineralField.h" />
+    <ClInclude Include="MousePos.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Soldier.h" />
     <ClInclude Include="stdafx.h" />

@@ -24,7 +24,7 @@ public:
 
 	void fill(int x, int z);
 	void free(int x, int z);
-	bool testColision(shared_ptr<Unit> u, int x, int z);
+	void testColision(shared_ptr<Unit> u, int x, int z);
 	void occupy(shared_ptr<Unit> u, int x, int z);
 	void leave(int x, int z);
 	shared_ptr<Targetable> searchTargets(int i, int j,float r);
