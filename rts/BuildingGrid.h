@@ -7,6 +7,12 @@ private:
 	int gridsize = N;
 	int mesh[N][N] = { 0 };
 	shared_ptr<Unit> occupying[N][N]={NULL};
+	//TODO przerobic na dynamiczna tablice
+//	std::vector < std::vector < int > >MatrixArray;
+//	void prepareMatrix() {
+//		MatrixArray.resize(N, std::vector<int>(N, 0));
+//		MatrixArray[][] =
+//	};
 public:
 	BuildingGrid();
 	bool testSize(int size, int x, int z);

@@ -114,7 +114,7 @@ void Player::buildStructure(vec3 pos)
 void Player::trainUnit(shared_ptr<Building> target) {
 	//TODO jak wybrac budynek
 	
-	myBuildings[0]->train(&weaponUpgrades, &armorUpgrades,5);
+	target->train(&weaponUpgrades, &armorUpgrades,5);
 	
 }
 

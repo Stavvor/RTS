@@ -8,7 +8,7 @@
 #include <iostream>
 #include <tchar.h>
 #include <string>
-#include <cmath>
+#include <math.h>
 #include <vector>
 #include <queue>
 #include <typeinfo>

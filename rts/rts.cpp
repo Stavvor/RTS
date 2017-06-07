@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+#pragma warning (disable : 4996)
 
 void attackCooldown(int);
 void actionTimer(int);
@@ -31,6 +31,9 @@ mousePos mouseLeftUpPos_end;
 
 void raycast(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
 void raycastEnd(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
+unsigned char*	      imageData;		   // the map image data
+unsigned char*       landTexture;	   // land texture data
+unsigned int		   land;			      // the land texture object
 
 void renderBitmapString(float x, float y, void *font, int num) {
 	const char *c;
@@ -51,6 +54,17 @@ void renderBitmapString(float x, float y, void *font, const char *string) {
 }
 
 int w, h;
+
+void drawHealth(float health) {
+	glBegin(GL_QUADS);
+	glColor3f(1, 0, 0);
+	glVertex2f(0, 0);
+	glVertex2f(1, 0);
+	glVertex2f(1, health);
+	glVertex2f(0, health);
+	glEnd();
+}
+
 void setOrthographicProjection() {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -66,6 +80,84 @@ void resetPerspectiveProjection() {
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 }
+struct SFace {
+	int v[3];
+	int n[3];
+	int t[3];
+};
+
+GLuint LoadObj(char * file) {
+
+	FILE * fp = fopen(file, "r");
+
+	if (fp == NULL) {
+		printf("ERROR: Cannot read model file \"%s\".\n", file);
+		return -1;
+	}
+
+	std::vector<vec3> * v = new std::vector<vec3>();
+	std::vector<vec3> * n = new std::vector<vec3>();
+	std::vector<vec3> * t = new std::vector<vec3>();
+	std::vector<SFace> * f = new std::vector<SFace>();
+
+	char buf[128];
+
+	while (fgets(buf, 128, fp) != NULL) {
+		if (buf[0] == 'v' && buf[1] == ' ') {
+			vec3 * vertex = new vec3();
+			sscanf_s(buf, "v %f %f %f", &vertex->x, &vertex->y, &vertex->z);
+			v->push_back(*vertex);
+		}
+		if (buf[0] == 'v' && buf[1] == 't') {
+			vec3 * vertex = new vec3();
+			sscanf_s(buf, "vt %f %f", &vertex->x, &vertex->y);
+			t->push_back(*vertex);
+		}
+		if (buf[0] == 'v' && buf[1] == 'n') {
+			vec3 * vertex = new vec3();
+			sscanf_s(buf, "vn %f %f %f", &vertex->x, &vertex->y, &vertex->z);
+			n->push_back(*vertex);
+		}
+		if (buf[0] == 'f' && buf[1] == ' ') {
+			SFace * face = new SFace();
+			sscanf_s(buf, "f %d/%d/%d %d/%d/%d %d/%d/%d",
+				&face->v[0], &face->t[0], &face->n[0],
+				&face->v[1], &face->t[1], &face->n[1],
+				&face->v[2], &face->t[2], &face->n[2]
+			);
+			f->push_back(*face);
+		}
+	}
+
+	fclose(fp);
+
+	GLuint dlId;
+	dlId = glGenLists(1);
+	glNewList(dlId, GL_COMPILE);
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < f->size(); ++i) {
+		for (int j = 0; j < 3; ++j) {
+		
+				vec3 * cv = &(*v)[((*f)[i].v[j] - 1)];
+				vec3 * ct = &(*t)[((*f)[i].t[j] - 1)];
+				vec3 * cn = &(*n)[((*f)[i].n[j] - 1)];
+				
+			glTexCoord2f(ct->x, ct->y);
+			glNormal3f(cn->x, cn->y, cn->z);
+			glVertex3f(cv->x, cv->y, cv->z);
+		}
+	}
+	glEnd();
+	glEndList();
+
+	delete v;
+	delete n;
+	delete t;
+	delete f;
+
+	return dlId;
+
+}
 
 vec3 destStart;
 vec3 destEnd;
@@ -73,14 +165,222 @@ Player* player;
 Targetable* mineral;
 SCameraState playerCamera;
 
+GLuint mechv1gora;
+GLuint mechv1nogi;
+GLuint mechv1gatlingi;
+GLuint mechv1tasma;
+
+GLuint tankT2;
+GLuint tankT2Wieza;
+GLuint tankT2Dzialko;
 int mouseX;
 int mouseY;
 int oldTimeSinceStart = 0;
+struct Point
+{
+	float x, y;
+	Point(float x = 0, float y = 0) :x(x), y(y) {};
+};
+
+struct AABB
+{
+	Point centre;
+	Point halfSize;
+
+	AABB(Point centre = Point(), Point halfSize = Point()) : centre(centre), halfSize(halfSize) {};
+
+	bool contains(Point a)
+	{
+		if (a.x < centre.x + halfSize.x && a.x > centre.x - halfSize.x)
+		{
+			if (a.y < centre.y + halfSize.y && a.y > centre.y - halfSize.y)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool intersects(AABB other)
+	{
+		//this right > that left                                          this left <s that right
+		if (centre.x + halfSize.x > other.centre.x - other.halfSize.x || centre.x - halfSize.x < other.centre.x + other.halfSize.x)
+		{
+			// This bottom > that top
+			if (centre.y + halfSize.y > other.centre.y - other.halfSize.y || centre.y - halfSize.y < other.centre.y + other.halfSize.y)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+};
+
+template <typename T>
+struct Data
+{
+	Point pos;
+	T load;/////////////////////////////////////////////////
+
+	Data(Point pos = Point(), T data = NULL) : pos(pos), load(data) {};
+};
 
 
+template <class T>
+class Quadtree
+{
+private:
+	//4 children
+	Quadtree* nw;
+	Quadtree* ne;
+	Quadtree* sw;
+	Quadtree* se;
 
+	AABB boundary;
+
+	std::vector< Data<T> > objects;
+
+	int CAPACITY;
+public:
+	Quadtree<T>();
+	Quadtree<T>(AABB boundary);
+
+	~Quadtree();
+
+	bool insert(Data<T> d);
+	void subdivide();
+	std::vector< Data<T> > queryRange(AABB range);
+};
+
+template <class T>
+Quadtree<T>::Quadtree()
+{
+	CAPACITY = 4;
+	nw = NULL;
+	ne = NULL;
+	sw = NULL;
+	se = NULL;
+	boundary = AABB();
+	objects = std::vector< Data<T> >();
+}
+
+template <class T>
+Quadtree<T>::Quadtree(AABB boundary)
+{
+	objects = std::vector< Data<T> >();
+	CAPACITY = 4;
+	nw = NULL;
+	ne = NULL;
+	sw = NULL;
+	se = NULL;
+	this->boundary = boundary;
+}
+
+template <class T>
+Quadtree<T>::~Quadtree()
+{
+	delete nw;
+	delete sw;
+	delete ne;
+	delete se;
+}
+
+template <class T>
+void Quadtree<T>::subdivide()
+{
+	Point qSize = Point(boundary.halfSize.x, boundary.halfSize.y);
+	Point qCentre = Point(boundary.centre.x - qSize.x, boundary.centre.y - qSize.y);
+	nw = new Quadtree(AABB(qCentre, qSize));
+
+	qCentre = Point(boundary.centre.x + qSize.x, boundary.centre.y - qSize.y);
+	ne = new Quadtree(AABB(qCentre, qSize));
+
+	qCentre = Point(boundary.centre.x - qSize.x, boundary.centre.y + qSize.y);
+	sw = new Quadtree(AABB(qCentre, qSize));
+
+	qCentre = Point(boundary.centre.x + qSize.x, boundary.centre.y + qSize.y);
+	se = new Quadtree(AABB(qCentre, qSize));
+}
+
+template <class T>
+bool Quadtree<T>::insert(Data<T> d)
+{
+	if (!boundary.contains(d.pos))
+	{
+		return false;
+	}
+
+	if (objects.size() < CAPACITY)
+	{
+		objects.push_back(d);
+		return true;
+	}
+
+	if (nw == NULL)
+	{
+		subdivide();
+	}
+
+	if (nw->insert(d))
+	{
+		return true;
+	}
+	if (ne->insert(d))
+	{
+		return true;
+	}
+	if (sw->insert(d))
+	{
+		return true;
+	}
+	if (se->insert(d))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+template <class T>
+std::vector< Data<T> > Quadtree<T>::queryRange(AABB range)
+{
+	std::vector< Data<T> > pInRange;
+
+	if (!boundary.intersects(range))
+	{
+		return pInRange;
+	}
+
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (range.contains(objects.at(i).pos))
+		{
+			pInRange.push_back(objects.at(i));
+		}
+	}
+
+	if (nw == NULL)
+	{
+		return pInRange;
+	}
+
+	std::vector< Data<T> > temp = nw->queryRange(range);
+	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
+
+	temp = ne->queryRange(range);
+	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
+
+	temp = sw->queryRange(range);
+	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
+
+	temp = se->queryRange(range);
+	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
+
+	return pInRange;
+}
 int main(int argc, char**argv){
 
+	
 	#pragma region testy jednostek
 	/*
 	////////////////////////////////////			TEST TWORZENIA I CZYSZCZENIA OBIEKTOW
@@ -312,8 +612,41 @@ int main(int argc, char**argv){
 	//player->getMyUnits()[0]->getHasMinerals();
 	//cout << player->getResources() << endl;
 
+
+	mechv1gora = LoadObj("resources/glowa.obj");
+	mechv1nogi = LoadObj("resources/nogi.obj");
+	mechv1gatlingi = LoadObj("resources/gatling.obj");
+	mechv1tasma = LoadObj("resources/mechTasma.obj");
+
+
+	tankT2 = LoadObj("resources/TankT2.obj");
+	tankT2Wieza = LoadObj("resources/TankT2Wieza.obj");
+	tankT2Dzialko = LoadObj("resources/TankT2Dzialko.obj");
+
 	glEnable(GL_DEPTH_TEST);
-	
+	const GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	const GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	const GLfloat light_position[] = { 50.0f, 50.0f, 50.0f, 0.0f };
+	const GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	const GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	const GLfloat mat_specular[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+	const GLfloat mat_shininess[] = { 100.0 };
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glShadeModel(GL_SMOOTH);
+
 	playerCamera.pos.x = 0.0f;
 	playerCamera.pos.y = 3.75f;
 	playerCamera.pos.z = 0.0f;
@@ -536,14 +869,20 @@ void OnTimer(int id) {
 		//TODO skosy
 
 		if (KeyFlags::keystate['b']) {
-			auto building = player->getMyBuildings();
-			auto var = building[0];
-			player->trainUnit(building.at(0));
+			for(auto building : player->getMyBuildings())
+			{
+				player->trainUnit(building);
+			}
+
 		}
 		if (KeyFlags::keystate['w']) {
+
+			
+
+		
 			player->createWorker();
 		}
-	    /*
+	    
 		if (KeyFlags::keystate['q']) {
 			float b = atan2(playerCamera.dir.z, playerCamera.dir.x);
 			float a = -0.05f;
@@ -558,13 +897,14 @@ void OnTimer(int id) {
 			playerCamera.dir.x = cos(b + a);
 			playerCamera.dir.z = sin(b + a);
 		}
-		*/
+		/**/
 		if (KeyFlags::keystate['s']) {
 			for (auto unit : player->getSelectedUnits())
 				unit->setDestination(unit->getPosition());
 		}
 		if (KeyFlags::keystate['q']) {
 			//TODO zmienic kursor do patrolu
+			//moze wrzicic do callbacka myszki?
 		}
 		/*	if (glutGetModifiers() == 2) {
 				switch (key)
@@ -986,12 +1326,10 @@ void OnRender() {
 
 	oldTimeSinceStart = timeSinceStart;
 	
-	int secs = timeSinceStart / 1000;
-	int mins = timeSinceStart / 60000;
-	int hours = timeSinceStart / 3600000;
-
+	int secs = (timeSinceStart / 1000) % 60;
+	int mins = (timeSinceStart / 60000) % 60;
+	int hours = (timeSinceStart / 3600000) % 24;
 	time << hours << "H:" << mins << "M:"<<secs<<"S";
-
 
 	const int font = (int)GLUT_BITMAP_9_BY_15;
 	
@@ -1003,42 +1341,24 @@ void OnRender() {
 	renderBitmapString(1600, 90, (void *)font, "armor upgrades");
 	renderBitmapString(1750, 90, (void *)font, player->getArmorUpgrades());
 	renderBitmapString(200, 800, (void *)font, time.str().c_str());
-
-	resetPerspectiveProjection();
+	glutWireCube(2.0f);
 
 	glPopMatrix();
+	resetPerspectiveProjection();
+	
+	
+
 	gluLookAt(
 		playerCamera.pos.x, playerCamera.pos.y, playerCamera.pos.z, // Pozycja kamery
 		playerCamera.pos.x + playerCamera.dir.x, playerCamera.pos.y + playerCamera.dir.y, playerCamera.pos.z + playerCamera.dir.z, // Punkt na ktory patrzy kamera (pozycja + kierunek)
 		0.0f, 1.0f, 0.0f // Wektor wyznaczajacy pion
 	);
-
-
-	
-	//siatka
-	for (int ix = -5; ix <= 5; ix += 1) {
-		for (int iz = -5; iz <= 5; iz += 1) {
-			glColor3f(.5f + .1f * ix, .5f - .1f * iz, 0.0f);
-			glPushMatrix();
-			glTranslatef(ix, 0.0f, iz);
-			glutSolidSphere(.05f, 8, 8);
-			glPopMatrix();
-		}
-	}
-	
-	/*
-	for (int i = 0; i < player->getMyUnits().size(); i++) {
-		vec3 temp=player->getMyUnits()[i]->getPosition();
-		glColor3f(0.0f,0.0f,1.0f);
-		glPushMatrix();
-		glTranslatef(temp.x,temp.y,temp.z);
-		glutWireCube(1.0f);
-		glPopMatrix();
-	}
-	*/
-	
+	Quadtree<shared_ptr<Unit>>quadtree(AABB(Point(0, 0), Point(200, 200)));
 	for (auto unit : player->getMyUnits())
 	{
+
+		
+		quadtree.insert(Data<shared_ptr<Unit>>(Point(unit->getPosition().x, unit->getPosition().z),unit));
 		if(!unit->getIsDead()){
 			vec3 temp = unit->getPosition();
 			if(unit->getName()=="Test")		//TODO przerobic
@@ -1050,15 +1370,77 @@ void OnRender() {
 					glColor3f(1.0f, 0.0f, 0.0f);
 			glPushMatrix();
 			glTranslatef(temp.x, temp.y, temp.z);
-			glutWireCube(1.0f);
+			//-2.0f
+			//-5.0f
+			if(unit->getTarget()!=NULL)
+			{
+				float angle = atan2(unit->getTarget()->getPosition().x - unit->getPosition().x, unit->getTarget()->getPosition().z - unit->getPosition().z);
+				angle = angle*(180 / 3.14);
+				glPushMatrix();
+				glRotatef(angle, 0.0f, 1.0f, 0.0f);
+				glCallList(mechv1gora);
+				glCallList(mechv1gatlingi);
+					glPushMatrix();
+					glTranslatef(1.5f, 2.2f, 1.7f);
+					glutSolidSphere(rand() % 3, 10, 10);
+					glTranslatef(-3.0f, 0.0f, 0.0f);
+					glutSolidSphere(rand() % 3, 10, 10);
+					glPopMatrix();
+				glPopMatrix();
+				//glCallList(tankT2Wieza);
+				//glCallList(tankT2Dzialko);
+				glCallList(mechv1nogi);
+				//glCallList(tankT2);
+			}
+			else
+			{
+				float angle = atan2(unit->getDestination().x - unit->getPosition().x, unit->getDestination().z - unit->getPosition().z);
+				angle = angle*(180 / 3.14);
+				glRotatef(angle, 0.0f, 1.0f, 0.0f);
+				glCallList(mechv1nogi);
+				glCallList(mechv1gatlingi);
+				glCallList(mechv1gora);
+				//glCallList(tankT2);
+				//glCallList(tankT2Wieza);
+				//glCallList(tankT2Dzialko);
+			}
+			
+			//glutWireCube(1.0f);
 			glPopMatrix();
 		}
 	}
+	for(auto unit: player->getMyUnits())
+	{
+		auto potentialCollision = quadtree.queryRange(AABB(Point(unit->getPosition().x, unit->getPosition().z), Point(6, 6)));
+		float ignoreX = unit->getPosition().x;
+		float ignoreZ = unit->getPosition().z;
+		if (potentialCollision.size() > 1)
+		{
+			/// 
+			for (auto unit : potentialCollision)
+			{
+				if (unit.load->getPosition().x != ignoreX, unit.load->getPosition().z != ignoreZ)
+				{
+					auto direction=unit.load->dir;
+					direction.x = -direction.x;
+					direction.y = -direction.y;
+					direction.z = -direction.z;
+					unit.load->dir=direction;
+					//cout << "kolizja" << endl;
+					//unit.
+					//unit->getDirection();
+				}
+			}
+		}
+		potentialCollision.clear();
+	}
+	
+	
+
 	for (auto building : player->getMyBuildings())
 	{
 		if (!building->getIsDead()) {
 			vec3 temp = building->getPosition();
-			glColor3f(0.0f, 1.0f, 0.0f);
 			glPushMatrix();
 			glTranslatef(temp.x, temp.y, temp.z);
 			glutWireCube(4.0f);
@@ -1071,6 +1453,7 @@ void OnRender() {
 	glutPostRedisplay();
 
 }
+
 
 void OnReshape(int width, int height) {
 	w = width;
@@ -1135,7 +1518,7 @@ void repairCommand(int a)
 void unitDetails(int)
 {
 	/**/
-	cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
+	/*cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
 	int i = 0;
 	for(auto unit : player->getMyUnits())
 	{
@@ -1154,7 +1537,7 @@ void unitDetails(int)
 		cout << "building[" << i << "] position " << buidling->getPosition() ;
 		cout << "building[" << i << "] hitpoints " << buidling->getHitPoints() << endl;
 		i++;
-	}
+	}*/
 
 	glutTimerFunc(3000, unitDetails, 0);
 	

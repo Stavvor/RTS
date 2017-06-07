@@ -23,7 +23,6 @@ void CombatUnit::scan()
 
 void CombatUnit::attack(shared_ptr<Targetable>  target)
 {
-	cout << "atakuje" << endl;
 	if (targetInRange()) {
 		if(target->getHitPoints()> damage + 2 * (*this->upgrades->weaponUpgradesPtr))
 			target->takeDamage(damage + 2 * (*this->upgrades->weaponUpgradesPtr));  //TODO dodac wartosc upgradu gdy uporam sie z *owner (damage+owner->getWeaponUpgrades)

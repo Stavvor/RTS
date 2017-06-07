@@ -197,6 +197,7 @@
     <ClCompile Include="KeyFlags.cpp" />
     <ClCompile Include="MineralField.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="rts.cpp" />
     <ClCompile Include="Soldier.cpp" />
     <ClCompile Include="stdafx.cpp">
