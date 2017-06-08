@@ -767,6 +767,27 @@ void OnTimer(int id) {
 	
 	// Chcemy, by ta funkcja zosta³a wywo³ana ponownie za 17ms.
 	glutTimerFunc(17, OnTimer, 0);
+	for (auto unit : player->getMyUnits())
+	{
+		vec3 currentPos = unit->getPosition();
+		vec3 destination = unit->getDestination();
+		currentPos = { currentPos.x, 0.0f, currentPos.z };
+		float x = unit->dir.x;
+		float y = 0.0f;
+		float z = unit->dir.z;
+		vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
+		float estTarget = 0.1;
+		if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
+		{
+			unit->setPosition(newPos);
+			unit->setIsMoving(true);
+		}
+		else
+		{
+			unit->setIsMoving(false);
+		}
+	}
+	
 
 	/**/
 	Quadtree<shared_ptr<Unit>>quadtree(AABB(Point(0, 0), Point(200, 200)));
@@ -779,23 +800,7 @@ void OnTimer(int id) {
 		auto potentialCollision = quadtree.queryRange(AABB(Point(unit->getPosition().x, unit->getPosition().z), Point(9.0, 9.0)));
 		if(potentialCollision.size()==1)
 		{
-			vec3 currentPos = unit->getPosition();
-			vec3 destination = unit->getDestination();
-			currentPos = { currentPos.x, 0.0f, currentPos.z };
-			float x = unit->dir.x;
-			float y = 0.0f;
-			float z = unit->dir.z;
-			vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
-			float estTarget = 0.1;
-			if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
-			{
-				unit->setPosition(newPos);
-				unit->setIsMoving(true);
-			}
-			else
-			{
-				unit->setIsMoving(false);
-			}
+			continue;
 		}
 		else
 		{
@@ -815,26 +820,6 @@ void OnTimer(int id) {
 					float distance = sqrt(pow((myPos.x + x*0.2 - targetPos.x), 2) + pow((myPos.y + y*0.2 - targetPos.y), 2) + pow((myPos.z + z*0.2 - targetPos.z), 2));
 					if (distance<2.0f)
 						unit->setDestination(unit->getPosition());
-					else
-					{
-						vec3 currentPos = unit->getPosition();
-						vec3 destination = unit->getDestination();
-						currentPos = { currentPos.x, 0.0f, currentPos.z };
-						float x = unit->dir.x;
-						float y = 0.0f;
-						float z = unit->dir.z;
-						vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
-						float estTarget = 0.1;
-						if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
-						{
-							unit->setPosition(newPos);
-							unit->setIsMoving(true);
-						}
-						else
-						{
-							unit->setIsMoving(false);
-						}
-					}
 					/*auto direction = unit->dir;
 					vec3 newUDest;
 					newUDest.x = direction.x*0.2 + unit->getPosition().x;
