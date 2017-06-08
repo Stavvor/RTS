@@ -7,6 +7,10 @@ BuildingGrid::BuildingGrid()
 
 bool BuildingGrid::testGrid(int size, int x, int z)
 {
+	if (x < 0 || z < 0){
+		cout << "Tu nie mozna budowac!" << endl;
+		return false;
+	}
 	if (!testSize(size, x, z)) {
 		cout << "Tu nie mozna budowac!" << endl;
 		return false;
@@ -61,6 +65,7 @@ bool BuildingGrid::test3x3(int x, int z)
 
 bool BuildingGrid::test4x4(int x, int z)
 {
+
 	if (mesh[x + 1][z + 0] != 0) return false;
 	if (mesh[x + 0][z + 1] != 0) return false;
 	if (mesh[x + 1][z + 1] != 0) return false;

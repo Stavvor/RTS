@@ -21,6 +21,8 @@ public:
 	//Unit(string Sname, string Stype, vec3 Vpos, unsigned int IAttackCooldown, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades);
 	string getName();
 	vec3 dir;
+	float angle;
+	float currAngle;
 	unsigned int maxCooldown;
 	unsigned int getCooldown();
 	void updateCooldown(unsigned int value);
@@ -50,5 +52,6 @@ public:
 	void setCurrentGridPos(int x, int z);
 	void setIsMoving(bool);
 	bool getIsMoving();
+	void calculateVecAngle();
 };
 

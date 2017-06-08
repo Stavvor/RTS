@@ -36,6 +36,7 @@ unsigned char*       landTexture;	   // land texture data
 unsigned int		   land;			      // the land texture object
 
 void renderBitmapString(float x, float y, void *font, int num) {
+	glDisable(GL_LIGHTING);
 	const char *c;
 	glRasterPos2f(x, y);
 	string str=to_string(num);
@@ -43,14 +44,17 @@ void renderBitmapString(float x, float y, void *font, int num) {
 	for (c = cstr; *c != '\0'; c++) {
 		glutBitmapCharacter(font, *c);
 	}
+	glEnable(GL_LIGHTING);
 }
 
 void renderBitmapString(float x, float y, void *font, const char *string) {
+	glDisable(GL_LIGHTING);
 	const char *c;
 	glRasterPos2f(x, y);
 	for (c = string; *c != '\0'; c++) {
 		glutBitmapCharacter(font, *c);
 	}
+	glEnable(GL_LIGHTING);
 }
 
 int w, h;
@@ -587,7 +591,8 @@ int main(int argc, char**argv){
 	glutTimerFunc(17, queueManager, 0);
 	glutTimerFunc(17, posManager, 0);
 	glutTimerFunc(17, attackManager, 0);
-
+	glutTimerFunc(1200, attackCooldown, 0);
+	
 	player = new Player("testPlayer");
 	
 	/*
@@ -764,39 +769,100 @@ void OnTimer(int id) {
 	glutTimerFunc(17, OnTimer, 0);
 
 	/**/
-	auto vec = player->getMyUnits();
-	for (int i = 0; i < player->getMyUnits().size(); i++) {
-		{
-			vec3 currentPos = vec[i]->getPosition();
-			vec3 destination = vec[i]->getDestination();
-			currentPos = { currentPos.x, 0.0f, currentPos.z };
-			/*
-			if (currentPos.x > destination.x) currentPos.x -= 0.05f;
-			if (currentPos.x < destination.x) currentPos.x += 0.05f;
-
-			if (currentPos.z > destination.z) currentPos.z -= 0.05f;
-			if (currentPos.z < destination.z) currentPos.z += 0.05f;
-			*/
-
-			
-				float x = vec[i]->dir.x;
-				float y = 0.0f;
-				float z = vec[i]->dir.z;
-				vec3 newPos = { currentPos.x+x*0.2,currentPos.y+y*0.2,currentPos.z+z*0.2};
-
-				if (abs(currentPos.x-destination.x)>0.1 || abs(currentPos.z - destination.z)>0.1)
-				{
-					vec[i]->setPosition(newPos);
-					vec[i]->setIsMoving(true);
-				}
-				else
-				{
-					vec[i]->setIsMoving(false);
-				}
-					
-			//TODO pooprawic to zeby jakos wygladalo...
-		}
+	Quadtree<shared_ptr<Unit>>quadtree(AABB(Point(0, 0), Point(200, 200)));
+	for (auto unit : player->getMyUnits())
+	{
+		quadtree.insert(Data<shared_ptr<Unit>>(Point(unit->getPosition().x, unit->getPosition().z), unit));
 	}
+	for(auto unit : player->getMyUnits())
+	{
+		auto potentialCollision = quadtree.queryRange(AABB(Point(unit->getPosition().x, unit->getPosition().z), Point(9.0, 9.0)));
+		if(potentialCollision.size()==1)
+		{
+			vec3 currentPos = unit->getPosition();
+			vec3 destination = unit->getDestination();
+			currentPos = { currentPos.x, 0.0f, currentPos.z };
+			float x = unit->dir.x;
+			float y = 0.0f;
+			float z = unit->dir.z;
+			vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
+			float estTarget = 0.1;
+			if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
+			{
+				unit->setPosition(newPos);
+				unit->setIsMoving(true);
+			}
+			else
+			{
+				unit->setIsMoving(false);
+			}
+		}
+		else
+		{
+			float ignoreX = unit->getPosition().x;
+			float ignoreZ = unit->getPosition().z;
+			vec3 myPos = unit->getPosition();
+			for (auto collidingUnit : potentialCollision)
+			{
+				vec3 targetPos = collidingUnit.load->getPosition();
+
+				if (collidingUnit.load->getPosition().x != ignoreX, collidingUnit.load->getPosition().z != ignoreZ)
+				{
+					float x = unit->dir.x;
+					float y = 0.0f;
+					float z = unit->dir.z;
+					//data.Height[(int)(player.getPosZ() + player.getDirZ()*player.GetSpeed()) - 1][(int)(player.getPosX() + player.getDirX()*player.GetSpeed()) - 1] == '1' || game.getNoclip())
+					float distance = sqrt(pow((myPos.x + x*0.2 - targetPos.x), 2) + pow((myPos.y + y*0.2 - targetPos.y), 2) + pow((myPos.z + z*0.2 - targetPos.z), 2));
+					if (distance<2.0f)
+						unit->setDestination(unit->getPosition());
+					else
+					{
+						vec3 currentPos = unit->getPosition();
+						vec3 destination = unit->getDestination();
+						currentPos = { currentPos.x, 0.0f, currentPos.z };
+						float x = unit->dir.x;
+						float y = 0.0f;
+						float z = unit->dir.z;
+						vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
+						float estTarget = 0.1;
+						if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
+						{
+							unit->setPosition(newPos);
+							unit->setIsMoving(true);
+						}
+						else
+						{
+							unit->setIsMoving(false);
+						}
+					}
+					/*auto direction = unit->dir;
+					vec3 newUDest;
+					newUDest.x = direction.x*0.2 + unit->getPosition().x;
+					newUDest.y = direction.y*0.2 + unit->getPosition().y;
+					newUDest.z = direction.z*0.2 + unit->getPosition().z;*/
+
+					/*auto collidingUnitDirection = collidingUnit.load->dir;
+					collidingUnitDirection.x = -collidingUnitDirection.x;
+					collidingUnitDirection.y = -collidingUnitDirection.y;
+					collidingUnitDirection.z = -collidingUnitDirection.z;
+					vec3 newDest;
+					newDest.x = collidingUnitDirection.x*0.2 + collidingUnit.load->getPosition().x;
+					newDest.y = collidingUnitDirection.y*0.2 + collidingUnit.load->getPosition().y;
+					newDest.z = collidingUnitDirection.z*0.2 + collidingUnit.load->getPosition().z;
+					collidingUnit.load->dir=collidingUnitDirection;
+					collidingUnit.load->setDestination(newDest);*/
+					//collidingUnit.load->setDestination(collidingUnit.load->getPosition());
+
+
+				}
+			}
+		}
+			
+		potentialCollision.clear();
+		//TODO pooprawic to zeby jakos wygladalo...
+	}
+	
+
 		/*
 		 for (auto unit : player->getMyUnits())
 		{
@@ -878,8 +944,6 @@ void OnTimer(int id) {
 		if (KeyFlags::keystate['w']) {
 
 			
-
-		
 			player->createWorker();
 		}
 	    
@@ -900,7 +964,10 @@ void OnTimer(int id) {
 		/**/
 		if (KeyFlags::keystate['s']) {
 			for (auto unit : player->getSelectedUnits())
+			{
 				unit->setDestination(unit->getPosition());
+				unit->dir = unit->dir;
+			}
 		}
 		if (KeyFlags::keystate['q']) {
 			//TODO zmienic kursor do patrolu
@@ -1141,6 +1208,7 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 		raycast(x, y, &destStart, &mouseLeftClickPos_start, &mouseLeftClickPos_end);
 		for (auto unit : player->getSelectedUnits())
 		{
+			
 			if (unit->getTarget() != NULL)
 				unit->setTarget(NULL);
 			unit->setDestination(destStart);
@@ -1341,6 +1409,31 @@ void OnRender() {
 	renderBitmapString(1600, 90, (void *)font, "armor upgrades");
 	renderBitmapString(1750, 90, (void *)font, player->getArmorUpgrades());
 	renderBitmapString(200, 800, (void *)font, time.str().c_str());
+
+	stringstream s;
+//	uto player->getSelectedUnits();
+//	for(int i =0; i < player->getSelectedUnits().size();i++)
+	for(auto unit:player->getSelectedUnits())
+	{
+		int y = 900;
+		s << "Name: " << unit->getName();
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		y += 15;
+		s.str("");
+		s << "Target: " << unit->getTarget();
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		s.str("");
+		y += 15;
+		s <<"Pos x: "<< unit->getPosition().x << " z: " << unit->getPosition().z;
+		renderBitmapString(300, y, (void *)font, s.str().c_str() );
+		y += 15;
+		s.str("");
+		s << "Dir x: "<< unit->getDestination().x << " z: " << unit->getDestination().z;
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		s.str("");
+	}
+	
+
 	glutWireCube(2.0f);
 
 	glPopMatrix();
@@ -1353,12 +1446,9 @@ void OnRender() {
 		playerCamera.pos.x + playerCamera.dir.x, playerCamera.pos.y + playerCamera.dir.y, playerCamera.pos.z + playerCamera.dir.z, // Punkt na ktory patrzy kamera (pozycja + kierunek)
 		0.0f, 1.0f, 0.0f // Wektor wyznaczajacy pion
 	);
-	Quadtree<shared_ptr<Unit>>quadtree(AABB(Point(0, 0), Point(200, 200)));
+	
 	for (auto unit : player->getMyUnits())
 	{
-
-		
-		quadtree.insert(Data<shared_ptr<Unit>>(Point(unit->getPosition().x, unit->getPosition().z),unit));
 		if(!unit->getIsDead()){
 			vec3 temp = unit->getPosition();
 			if(unit->getName()=="Test")		//TODO przerobic
@@ -1394,11 +1484,10 @@ void OnRender() {
 			}
 			else
 			{
-				float angle = atan2(unit->getDestination().x - unit->getPosition().x, unit->getDestination().z - unit->getPosition().z);
-				angle = angle*(180 / 3.14);
-				glRotatef(angle, 0.0f, 1.0f, 0.0f);
+				unit->calculateVecAngle(); 
+				glRotatef(unit->angle, 0.0f, 1.0f, 0.0f); 
 				glCallList(mechv1nogi);
-				glCallList(mechv1gatlingi);
+				glCallList(mechv1gatlingi); 
 				glCallList(mechv1gora);
 				//glCallList(tankT2);
 				//glCallList(tankT2Wieza);
@@ -1409,33 +1498,6 @@ void OnRender() {
 			glPopMatrix();
 		}
 	}
-	for(auto unit: player->getMyUnits())
-	{
-		auto potentialCollision = quadtree.queryRange(AABB(Point(unit->getPosition().x, unit->getPosition().z), Point(6, 6)));
-		float ignoreX = unit->getPosition().x;
-		float ignoreZ = unit->getPosition().z;
-		if (potentialCollision.size() > 1)
-		{
-			/// 
-			for (auto unit : potentialCollision)
-			{
-				if (unit.load->getPosition().x != ignoreX, unit.load->getPosition().z != ignoreZ)
-				{
-					auto direction=unit.load->dir;
-					direction.x = -direction.x;
-					direction.y = -direction.y;
-					direction.z = -direction.z;
-					unit.load->dir=direction;
-					//cout << "kolizja" << endl;
-					//unit.
-					//unit->getDirection();
-				}
-			}
-		}
-		potentialCollision.clear();
-	}
-	
-	
 
 	for (auto building : player->getMyBuildings())
 	{
@@ -1486,16 +1548,8 @@ void queueManager(int type){
 }
 void attackCooldown(int)
 {
-	/*
-	for (auto unit : player->getMyUnits()) {
-		if (typeid(unit) == typeid(CombatUnit*)){
-			if (unit->getAttackCooldown()!=unit->maxAttackCooldown ){
-				unit->updateAttackCooldown(100);
-			}
-		}
-	}
-	glutTimerFunc(100, attackCooldown, 0);
-	*/
+
+	//glutTimerFunc(17, attackCooldown, 0);
 }
 /*
 void repairCommand(int a)
@@ -1517,28 +1571,33 @@ void repairCommand(int a)
 */
 void unitDetails(int)
 {
-	/**/
-	/*cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
+/*	/*
+
+	cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
+	
+	#1#
 	int i = 0;
 	for(auto unit : player->getMyUnits())
 	{
-		//cout << "unit[" << i << "] position " << unit->getPosition() ;
-		cout << "unit[" << i << "] hitpoints " << unit->getHitPoints() << endl;
-		cout << "unit[" << i << "] this " << unit << endl;
-		cout << "unit[" << i << "] target " << unit->getTarget() << endl;
+
+
+		/*cout << "unit[" << i << "] position " << unit->getPosition() ;
 		cout << "unit[" << i << "] destination " << unit->getDestination() << endl;
-		//cout << "unit[" << i << "] attackcooldown " << unit->getCooldown() << endl;
+		cout << "unit[" << i << "] dir " << unit->dir << endl;#1#
 		i++;
 	}
 	i = 0;
+	/*
+	int i = 0;
 	for (auto buidling : player->getMyBuildings())
 	{
 
 		cout << "building[" << i << "] position " << buidling->getPosition() ;
 		cout << "building[" << i << "] hitpoints " << buidling->getHitPoints() << endl;
+		cout << "building[" << i << "] hitpoints " << buidling->getPosition() << endl;
 		i++;
-	}*/
-
+	}
+	#1#*/
 	glutTimerFunc(3000, unitDetails, 0);
 	
 }
@@ -1590,7 +1649,7 @@ void posManager(int a)
 			player->grid->occupy(unit, x, z);
 			unit->setCurrentGridPos(x, z);
 		}
-		if (unit->getTarget() == NULL && !unit->getIsMoving()){
+		/*if (unit->getTarget() == NULL && !unit->getIsMoving()){	//TODO atak wstrzymany...
 			shared_ptr<Targetable>target = player->grid->searchTargets(x, z, unit->getRange());
 			if(target!=NULL)
 			{
@@ -1603,8 +1662,8 @@ void posManager(int a)
 			{
 				unit->setTarget(NULL);
 			}
-		}
-
+		}*/
+		
 	}
 	
 	glutTimerFunc(20, posManager, 0);

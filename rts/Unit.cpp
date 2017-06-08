@@ -195,3 +195,14 @@ bool Unit::getIsMoving()
 {
 	return isMoving;
 }
+
+void Unit::calculateVecAngle()
+{
+	if(this->getDestination().x!=this->getPosition().x && this->getDestination().y != this->getPosition().y && this->getDestination().z != this->getPosition().z)
+	{
+		angle = atan2(this->getDestination().x - this->getPosition().x, this->getDestination().z - this->getPosition().z);
+		angle = angle*(180 / 3.14);
+	}
+	
+	
+}
