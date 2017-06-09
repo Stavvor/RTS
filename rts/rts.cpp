@@ -767,27 +767,6 @@ void OnTimer(int id) {
 	
 	// Chcemy, by ta funkcja zosta³a wywo³ana ponownie za 17ms.
 	glutTimerFunc(17, OnTimer, 0);
-	for (auto unit : player->getMyUnits())
-	{
-		vec3 currentPos = unit->getPosition();
-		vec3 destination = unit->getDestination();
-		currentPos = { currentPos.x, 0.0f, currentPos.z };
-		float x = unit->dir.x;
-		float y = 0.0f;
-		float z = unit->dir.z;
-		vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
-		float estTarget = 0.1;
-		if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
-		{
-			unit->setPosition(newPos);
-			unit->setIsMoving(true);
-		}
-		else
-		{
-			unit->setIsMoving(false);
-		}
-	}
-	
 
 	/**/
 	Quadtree<shared_ptr<Unit>>quadtree(AABB(Point(0, 0), Point(200, 200)));
@@ -814,12 +793,13 @@ void OnTimer(int id) {
 				if (collidingUnit.load->getPosition().x != ignoreX, collidingUnit.load->getPosition().z != ignoreZ)
 				{
 					float x = unit->dir.x;
-					float y = 0.0f;
+					float y = 1.0f;
 					float z = unit->dir.z;
 					//data.Height[(int)(player.getPosZ() + player.getDirZ()*player.GetSpeed()) - 1][(int)(player.getPosX() + player.getDirX()*player.GetSpeed()) - 1] == '1' || game.getNoclip())
 					float distance = sqrt(pow((myPos.x + x*0.2 - targetPos.x), 2) + pow((myPos.y + y*0.2 - targetPos.y), 2) + pow((myPos.z + z*0.2 - targetPos.z), 2));
 					if (distance<2.0f)
 						unit->setDestination(unit->getPosition());
+					
 					/*auto direction = unit->dir;
 					vec3 newUDest;
 					newUDest.x = direction.x*0.2 + unit->getPosition().x;
@@ -846,7 +826,27 @@ void OnTimer(int id) {
 		potentialCollision.clear();
 		//TODO pooprawic to zeby jakos wygladalo...
 	}
-	
+
+	for (auto unit : player->getMyUnits())
+	{
+		vec3 currentPos = unit->getPosition();
+		vec3 destination = unit->getDestination();
+		currentPos = { currentPos.x, 0.0f, currentPos.z };
+		float x = unit->dir.x;
+		float y = 1.0f;
+		float z = unit->dir.z;
+		vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
+		float estTarget = 0.1;
+		if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
+		{
+			unit->setPosition(newPos);
+			unit->setIsMoving(true);
+		}
+		else
+		{
+			unit->setIsMoving(false);
+		}
+	}
 
 		/*
 		 for (auto unit : player->getMyUnits())
@@ -928,8 +928,8 @@ void OnTimer(int id) {
 		}
 		if (KeyFlags::keystate['w']) {
 
-			
-			player->createWorker();
+
+			//player->createWorker();
 		}
 	    
 		if (KeyFlags::keystate['q']) {
@@ -1191,18 +1191,43 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 
 	if ((button == GLUT_RIGHT_BUTTON) && (state == GLUT_DOWN)) {
 		raycast(x, y, &destStart, &mouseLeftClickPos_start, &mouseLeftClickPos_end);
-		for (auto unit : player->getSelectedUnits())
-		{
-			
-			if (unit->getTarget() != NULL)
-				unit->setTarget(NULL);
-			unit->setDestination(destStart);
-			unit->dir.x = unit->getDestination().x - unit->getPosition().x;
-			unit->dir.z = unit->getDestination().z - unit->getPosition().z;
 
-			float hyp = sqrt(unit->dir.x*unit->dir.x + unit->dir.z*unit->dir.z);
-			unit->dir.x /= hyp;
-			unit->dir.z /= hyp;
+		if(player->getSelectedUnits().size()==1){
+			for (auto unit : player->getSelectedUnits())
+			{
+				
+				if (unit->getTarget() != NULL)
+					unit->setTarget(NULL);
+				unit->setDestination(destStart);
+				unit->dir.x = unit->getDestination().x - unit->getPosition().x;
+				unit->dir.z = unit->getDestination().z - unit->getPosition().z;
+
+				float hyp = sqrt(unit->dir.x*unit->dir.x + unit->dir.z*unit->dir.z);
+				unit->dir.x /= hyp;
+				unit->dir.z /= hyp;
+			}
+		}
+		if(player->getSelectedUnits().size()>1)
+		{
+			auto unit = player->getSelectedUnits();
+			//vec2 formationDest(destStart.x, destStart.z);
+			auto destinations=player->calculateFormationDestinations(player->calculateFormation(),destStart);
+			//auto destinations = player->calculateFormationDestinations(formationDest);
+			cout << destStart << endl;
+			for(int i=0;i<unit.size();i++)
+			{
+				if (unit[i]->getTarget() != NULL)
+					unit[i]->setTarget(NULL);
+
+				unit[i]->setDestination(destinations[i]);
+
+				unit[i]->dir.x = unit[i]->getDestination().x - unit[i]->getPosition().x;
+				unit[i]->dir.z = unit[i]->getDestination().z - unit[i]->getPosition().z;
+
+				float hyp = sqrt(unit[i]->dir.x*unit[i]->dir.x + unit[i]->dir.z*unit[i]->dir.z);
+				unit[i]->dir.x /= hyp;
+				unit[i]->dir.z /= hyp;
+			}
 		}
 
 		return;
@@ -1244,36 +1269,36 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 		{
 			vec3 pos = unit->getPosition();
 
-			vec3 vertexA = { destStart.x,0.0f,destStart.z };
-			vec3 vertexB = { destEnd.x,0.0f,destStart.z };
-			vec3 vertexC = { destEnd.x,0.0f,destEnd.z };
+			vec3 vertexA = { destStart.x,1.0f,destStart.z };
+			vec3 vertexB = { destEnd.x,1.0f,destStart.z };
+			vec3 vertexC = { destEnd.x,1.0f,destEnd.z };
 
 			if((pos.x>=vertexA.x && pos.x <=vertexB.x) && (pos.z >= vertexB.z && pos.z <= vertexC.z))
 			{
 				player->addToSelectedUnits(unit);
 			}
 
-			vec3 vertexAI = { destStart.x,0.0f,destStart.z };
-			vec3 vertexBI = { destStart.x,0.0f,destEnd.z };
-			vec3 vertexCI = { destEnd.x,0.0f,destEnd.z };
+			vec3 vertexAI = { destStart.x,1.0f,destStart.z };
+			vec3 vertexBI = { destStart.x,1.0f,destEnd.z };
+			vec3 vertexCI = { destEnd.x,1.0f,destEnd.z };
 
 			if ((pos.x <= vertexAI.x && pos.x >= vertexCI.x) && (pos.z >= vertexAI.z && pos.z <= vertexBI.z))
 			{
 				player->addToSelectedUnits(unit);
 			}
 
-			vec3 vertexAII = { destStart.x,0.0f,destStart.z };
-			vec3 vertexBII = { destEnd.x,0.0f,destEnd.z };
-			vec3 vertexCII = { destEnd.x,0.0f,destStart.z };
+			vec3 vertexAII = { destStart.x,1.0f,destStart.z };
+			vec3 vertexBII = { destEnd.x,1.0f,destEnd.z };
+			vec3 vertexCII = { destEnd.x,1.0f,destStart.z };
 
 			if ((pos.x<= vertexBII.x && pos.x>=vertexAII.x) && (pos.z<= vertexCII.z && pos.z>= vertexBII.z))
 			{
 				player->addToSelectedUnits(unit);
 			}
 
-			vec3 vertexAIII = { destStart.x,0.0f,destStart.z };
-			vec3 vertexBIII = { destEnd.x,0.0f,destEnd.z };
-			vec3 vertexCIII = { destStart.x,0.0f,destEnd.z };
+			vec3 vertexAIII = { destStart.x,1.0f,destStart.z };
+			vec3 vertexBIII = { destEnd.x,1.0f,destEnd.z };
+			vec3 vertexCIII = { destStart.x,1.0f,destEnd.z };
 
 			if ((pos.x<= vertexCIII.x&& pos.x >= vertexBIII.x) && (pos.z <= vertexAIII.z && pos.z >= vertexCIII.z))
 			{

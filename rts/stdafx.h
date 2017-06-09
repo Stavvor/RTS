@@ -4,6 +4,7 @@
 //
 
 #pragma once
+#pragma comment(lib,"irrKlang.lib")
 
 #include <iostream>
 #include <tchar.h>
@@ -16,6 +17,7 @@
 #include <mutex>
 #include <memory>
 #include <sstream>
+#include <irrKlang.h>
 
 //#include <windows.h>
 
@@ -44,6 +46,7 @@ using namespace std;
 #include "Player.h"
 #include "AirTransporter.h"
 #include "MousePos.h"
+
 
 extern Player* player;
 

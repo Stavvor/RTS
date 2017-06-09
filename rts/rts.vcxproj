@@ -88,16 +88,16 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"</Command>
+      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,13 +107,15 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"</Command>
+      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -169,12 +171,14 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Generator.h" />
     <ClInclude Include="BuildingGrid.h" />
     <ClInclude Include="KeyFlags.h" />
     <ClInclude Include="MineralField.h" />
     <ClInclude Include="MousePos.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Resources.h" />
     <ClInclude Include="Soldier.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Targetable.h" />
@@ -192,12 +196,14 @@
     <ClCompile Include="Building.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Factory.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Generator.cpp" />
     <ClCompile Include="BuildingGrid.cpp" />
     <ClCompile Include="KeyFlags.cpp" />
     <ClCompile Include="MineralField.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="QuadTree.cpp" />
+    <ClCompile Include="Resources.cpp" />
     <ClCompile Include="rts.cpp" />
     <ClCompile Include="Soldier.cpp" />
     <ClCompile Include="stdafx.cpp">

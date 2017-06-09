@@ -5,5 +5,11 @@ struct vec3 {
 
 struct vec2
 {
+	vec2(float x, float z)
+		: x(x),
+		  z(z)
+	{
+	}
+
 	float x, z;
 };

@@ -61,7 +61,8 @@ public:
 	
 	void addToSelectedUnits(shared_ptr<Unit> target);
 	void clearSelectedUnits();
-
+	vec3 calculateFormation();
+	vector<vec3> calculateFormationDestinations(vec3,vec3);
 	void addToControlGroup(int, vector<shared_ptr<Unit>> selectedUnits);
 	void jumpToControlGroup(int);
 

@@ -98,8 +98,8 @@ void Player::buildStructure()
 {
 	//TODO UI budowania...
 	//inne budynki....
-	//myBuildings.push_back(new Barracks({ 0,0,0 }, 2000, &armorUpgrades));//TODO mouse pos
-	myBuildings.emplace_back(new Barracks({ 0,0,0 }, 2000, &armorUpgrades));//TODO mouse pos
+	//myBuildings.push_back(new Barracks({ 0,1,0 }, 2000, &armorUpgrades));//TODO mouse pos
+	myBuildings.emplace_back(new Barracks({ 0,1,0 }, 2000, &armorUpgrades));//TODO mouse pos
 
 }
 
@@ -156,6 +156,95 @@ void Player::addToSelectedUnits(shared_ptr<Unit> target)
 void Player::clearSelectedUnits()
 {
 	selectedUnits.clear();
+}
+
+vec3 Player::calculateFormation()
+{
+	float minZ = N;
+	float minX = N;
+	float maxZ = 0;
+	float maxX = 0;
+	for (int i = 0; i < selectedUnits.size(); i++)
+	{
+		if (selectedUnits[i]->getPosition().x >= maxX)
+			maxX = selectedUnits[i]->getPosition().x;
+		if (selectedUnits[i]->getPosition().x <= minX)
+			minX = selectedUnits[i]->getPosition().x;
+		if (selectedUnits[i]->getPosition().z >= maxZ)
+			maxZ = selectedUnits[i]->getPosition().z;
+		if (selectedUnits[i]->getPosition().z <= minZ)
+			minZ = selectedUnits[i]->getPosition().z;
+	}
+	///
+	vec3 A, B, C, D;
+
+	A = { minX,1.0f,minZ };
+	B = { minX,1.0f,maxZ };
+	C = { maxX,1.0f,maxZ };
+	D = { maxX,1.0f,minZ };
+
+
+	///NW min
+	///SE max
+
+	
+
+
+	float bottom = (A.x + B.x) / 2;
+	float side = (A.z + D.z) / 2 ;
+	
+	
+	vec3 mid{ bottom,1.0f,side };
+	return mid;
+
+}
+
+vector<vec3> Player::calculateFormationDestinations(vec3 middle,vec3 dest)
+{
+	vector<vec3>destinations;
+	for(auto unit:selectedUnits)
+	{
+		float unitX = unit->getPosition().x;
+		float unitZ = unit->getPosition().z;
+
+		//vec3 newDest;
+		vec3 tempDest;
+
+		if(unitX>middle.x)
+		{
+			float tempX = unitX - middle.x;
+			//newDest.x=middle.x + temp;
+			//unitX += middle.x;
+			tempDest.x = dest.x + tempX;
+		}
+		else
+		{
+			float tempX = middle.x- unitX;
+			//newDest.x = middle.x - temp;
+			//unitX -= middle.x;
+			tempDest.x = dest.x - tempX;
+		}
+
+		if (unitZ>middle.z)
+		{
+			float tempZ = unitZ - middle.z;
+			//newDest.z = middle.z+temp;
+			//unitZ += middle.z;
+			tempDest.z= dest.z + tempZ;
+		}
+		else
+		{
+			float tempZ = middle.z- unitZ;
+			//newDest.z = middle.z-temp;
+			//unitZ -= middle.z;
+			tempDest.z = dest.z + tempZ;
+		}
+		tempDest.y = 1.0f;
+		//vec3 tempDest = { newDest.x,1.0f,newDest.z };//TODO Y
+		destinations.push_back(tempDest);
+	}
+	
+	return destinations;
 }
 
 void Player::addToControlGroup(int at, vector<shared_ptr<Unit>> selectedUnits)

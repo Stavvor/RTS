@@ -12,6 +12,7 @@ private:
 	int currentXpos;
 	int currentZpos;
 	bool isMoving;
+	//
 	
 public:
 	//Targetable* target;		//TODO roziwazac cel...
