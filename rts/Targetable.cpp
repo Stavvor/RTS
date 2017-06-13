@@ -4,11 +4,19 @@
 
 Targetable::Targetable()
 {
-	for(int i=0;i<targetedBy.size();i++)
+	/*for(int i=0;i<targetedBy.size();i++)
 	{
 		targetedBy[i].reset();
 	}
-	targetedBy.clear();
+	targetedBy.clear();*/
+}
+
+Targetable::Targetable(vec3 Vpos)
+	:
+	Entity(Vpos)
+{
+	upgrades = NULL;
+	isDead = false;
 }
 
 Targetable::Targetable(vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades)
@@ -89,7 +97,8 @@ string Targetable::getType()
 
 Targetable::~Targetable()
 {
-	delete(upgrades); //TODO przywrocic
+	if(upgrades!=NULL) //nie wszystkie targetable maja upgrady...
+		delete(upgrades); //TODO przywrocic
 }
 
 void Targetable::setIsDead(bool value)
@@ -114,3 +123,4 @@ void Targetable::addToTargetedby(shared_ptr<Targetable>targetingUnit)
 {
 	targetedBy.emplace_back(targetingUnit);//TODO ogarnac
 }
+

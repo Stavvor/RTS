@@ -4,7 +4,9 @@
 //
 
 #pragma once
-#pragma comment(lib,"irrKlang.lib")
+#pragma comment(lib, "irrKlang.lib")
+
+#pragma warning (disable : 4996)
 
 #include <iostream>
 #include <tchar.h>
@@ -17,7 +19,7 @@
 #include <mutex>
 #include <memory>
 #include <sstream>
-#include <irrKlang.h>
+#include <irr/irrKlang.h>
 
 //#include <windows.h>
 
@@ -37,17 +39,32 @@ using namespace std;
 #include "CombatUnit.h"
 #include "Building.h"
 #include "Worker.h"
-#include "Soldier.h"
-#include "Barracks.h"
+#include "MechT1.h"
+#include "MechT2.h"
+#include "TankT1.h"
+#include "TankT2.h"
+#include "FighterT1.h"
+#include "FighterT2.h"
+#include "BomberT1.h"
+#include "BomberT2.h"
+#include "Transporter.h"
+#include "ReconPlane.h"
 #include "Factory.h"
 #include "Airport.h"
 #include "Generator.h"
-#include "BuildingGrid.h"
+#include "Grid.h"
 #include "Player.h"
-#include "AirTransporter.h"
+
+
 #include "MousePos.h"
+#include "Resources.h"
+#include "Structs.h"
+#include "Quadtree.h"
+#include "SoundPlayer.h"
+#include "Game.h"
+#include "Mouse.h"
 
 
-extern Player* player;
+#include "rts.h"
 
 // TODO: reference additional headers your program requires here

@@ -9,6 +9,8 @@ Generator::Generator(vec3 VMousePos, unsigned int IHpValue, unsigned int* armorU
 	:
 	Building(VMousePos, IHpValue, armorUpgrades)
 {
+	cooldown = 0;
+	maxCooldown = 100;//TODO fix
 }
 /*
 void Generator::train()
@@ -16,5 +18,20 @@ void Generator::train()
 }
 */
 Generator::~Generator()
+{
+}
+
+void Generator::updateCooldown(unsigned int value)
+{
+	cooldown += value;
+	if(cooldown>=maxCooldown)
+	{
+		player->updateEnergy(4);
+		cooldown = 0;
+	}
+	
+}
+
+void Generator::drawSelf()
 {
 }

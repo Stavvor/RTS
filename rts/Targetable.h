@@ -24,6 +24,7 @@ public:
 	vector<shared_ptr<Targetable>>targetedBy;
 	Upgrades* upgrades;
 	Targetable();
+	Targetable(vec3 Vpos);
 	Targetable(vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades);
 	Targetable(string Stype, vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades);
 	Targetable(string Stype, vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades, unsigned int* WeaponUpgrades);

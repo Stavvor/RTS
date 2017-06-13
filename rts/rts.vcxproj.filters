@@ -66,12 +66,6 @@
     <ClInclude Include="Player.h">
       <Filter>Header Files\stuff</Filter>
     </ClInclude>
-    <ClInclude Include="Barracks.h">
-      <Filter>Header Files\Buildings</Filter>
-    </ClInclude>
-    <ClInclude Include="Factory.h">
-      <Filter>Header Files\Buildings</Filter>
-    </ClInclude>
     <ClInclude Include="Airport.h">
       <Filter>Header Files\Buildings</Filter>
     </ClInclude>
@@ -87,9 +81,6 @@
     <ClInclude Include="CombatUnit.h">
       <Filter>Header Files\Units\CombatUnits</Filter>
     </ClInclude>
-    <ClInclude Include="Soldier.h">
-      <Filter>Header Files\Units\CombatUnits</Filter>
-    </ClInclude>
     <ClInclude Include="MineralField.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -97,12 +88,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Targetable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AirTransporter.h">
-      <Filter>Header Files\Units\UtilityUnits</Filter>
-    </ClInclude>
-    <ClInclude Include="BuildingGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
@@ -119,6 +104,60 @@
     </ClInclude>
     <ClInclude Include="Resources.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Structs.h">
+      <Filter>Header Files\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="MechT1.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="MechT2.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="TankT1.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="TankT2.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="FighterT1.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="FighterT2.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="BomberT2.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="BomberT1.h">
+      <Filter>Header Files\Units\CombatUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="ReconPlane.h">
+      <Filter>Header Files\Units\UtilityUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="Transporter.h">
+      <Filter>Header Files\Units\UtilityUnits</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Factory.h">
+      <Filter>Header Files\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="Headquarters.h">
+      <Filter>Header Files\Buildings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -140,19 +179,10 @@
     <ClCompile Include="Airport.cpp">
       <Filter>Source Files\Buildings</Filter>
     </ClCompile>
-    <ClCompile Include="Barracks.cpp">
-      <Filter>Source Files\Buildings</Filter>
-    </ClCompile>
-    <ClCompile Include="Factory.cpp">
-      <Filter>Source Files\Buildings</Filter>
-    </ClCompile>
     <ClCompile Include="Generator.cpp">
       <Filter>Source Files\Buildings</Filter>
     </ClCompile>
     <ClCompile Include="CombatUnit.cpp">
-      <Filter>Source Files\Units\CombatUnits</Filter>
-    </ClCompile>
-    <ClCompile Include="Soldier.cpp">
       <Filter>Source Files\Units\CombatUnits</Filter>
     </ClCompile>
     <ClCompile Include="UtilityUnit.cpp">
@@ -170,16 +200,7 @@
     <ClCompile Include="Targetable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AirTransporter.cpp">
-      <Filter>Source Files\Units\UtilityUnits</Filter>
-    </ClCompile>
-    <ClCompile Include="BuildingGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KeyFlags.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
@@ -187,6 +208,51 @@
     </ClCompile>
     <ClCompile Include="Resources.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MechT1.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="MechT2.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="TankT1.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="TankT2.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="FighterT2.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="FighterT1.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="BomberT1.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="BomberT2.cpp">
+      <Filter>Source Files\Units\CombatUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="Transporter.cpp">
+      <Filter>Source Files\Units\UtilityUnits</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Factory.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="Headquarters.cpp">
+      <Filter>Source Files\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="ReconPlane.cpp">
+      <Filter>Source Files\Units\UtilityUnits</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

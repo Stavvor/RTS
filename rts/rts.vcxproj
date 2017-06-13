@@ -97,7 +97,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
+      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,7 +116,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
+      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -165,22 +167,35 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Airport.h" />
-    <ClInclude Include="AirTransporter.h" />
-    <ClInclude Include="Barracks.h" />
+    <ClInclude Include="Headquarters.h" />
+    <ClInclude Include="Mouse.h" />
+    <ClInclude Include="rts.h" />
+    <ClInclude Include="SoundPlayer.h" />
+    <ClInclude Include="Transporter.h" />
+    <ClInclude Include="Factory.h" />
+    <ClInclude Include="BomberT1.h" />
+    <ClInclude Include="BomberT2.h" />
     <ClInclude Include="Building.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Entity.h" />
-    <ClInclude Include="Factory.h" />
+    <ClInclude Include="FighterT1.h" />
+    <ClInclude Include="FighterT2.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Generator.h" />
-    <ClInclude Include="BuildingGrid.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="KeyFlags.h" />
+    <ClInclude Include="MechT2.h" />
     <ClInclude Include="MineralField.h" />
     <ClInclude Include="MousePos.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="QuadTree.h" />
+    <ClInclude Include="ReconPlane.h" />
     <ClInclude Include="Resources.h" />
-    <ClInclude Include="Soldier.h" />
+    <ClInclude Include="MechT1.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Structs.h" />
+    <ClInclude Include="TankT1.h" />
+    <ClInclude Include="TankT2.h" />
     <ClInclude Include="Targetable.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="CombatUnit.h" />
@@ -191,21 +206,28 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Airport.cpp" />
-    <ClCompile Include="AirTransporter.cpp" />
-    <ClCompile Include="Barracks.cpp" />
+    <ClCompile Include="Headquarters.cpp" />
+    <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="SoundPlayer.cpp" />
+    <ClCompile Include="Transporter.cpp" />
+    <ClCompile Include="Factory.cpp" />
+    <ClCompile Include="BomberT1.cpp" />
+    <ClCompile Include="BomberT2.cpp" />
     <ClCompile Include="Building.cpp" />
     <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="Factory.cpp" />
+    <ClCompile Include="FighterT1.cpp" />
+    <ClCompile Include="FighterT2.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Generator.cpp" />
-    <ClCompile Include="BuildingGrid.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="KeyFlags.cpp" />
+    <ClCompile Include="MechT2.cpp" />
     <ClCompile Include="MineralField.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="QuadTree.cpp" />
+    <ClCompile Include="ReconPlane.cpp" />
     <ClCompile Include="Resources.cpp" />
     <ClCompile Include="rts.cpp" />
-    <ClCompile Include="Soldier.cpp" />
+    <ClCompile Include="MechT1.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -213,6 +235,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="CombatUnit.cpp" />
+    <ClCompile Include="TankT1.cpp" />
+    <ClCompile Include="TankT2.cpp" />
     <ClCompile Include="Targetable.cpp" />
     <ClCompile Include="Unit.cpp" />
     <ClCompile Include="UtilityUnit.cpp" />

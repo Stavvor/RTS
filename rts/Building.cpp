@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Player.h"
 #include "Building.h"
 
 
@@ -59,3 +58,8 @@ void Building::setRallyPoint(vec3 mousePos)
 Building::~Building(){
 
 }
+
+void Building::updateCooldown(unsigned)
+{
+}
+

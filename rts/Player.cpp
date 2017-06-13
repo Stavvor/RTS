@@ -11,6 +11,7 @@ Player::Player(string Sname)
 	supply = 0;
 	weaponUpgrades = 0;
 	armorUpgrades = 0;
+	grid = new Grid();
 }
 
 unsigned int Player::getResources()
@@ -28,6 +29,10 @@ unsigned int Player::getEnergy()
 	return energy;
 }
 
+void Player::updateEnergy(unsigned int value)
+{
+	energy += value;
+}
 unsigned int Player::getWeaponUpgrades()
 {
 	return weaponUpgrades;
@@ -83,54 +88,54 @@ SCameraState Player::jumpToCameraHotkey(int key)
 
 void Player::select()
 {
-	//TODO 
+	//TODO unit selecting
 }
 
 void Player::repair(Worker* selected)
 {
 
-	Targetable*target; //TODO cel
+	Targetable*target; //TODO target
 	//selected->repair(target);
 	
 }
 
+
 void Player::buildStructure()
 {
-	//TODO UI budowania...
-	//inne budynki....
+	//TODO remove
+	//TODO building UI
+	//other buildings...
 	//myBuildings.push_back(new Barracks({ 0,1,0 }, 2000, &armorUpgrades));//TODO mouse pos
-	myBuildings.emplace_back(new Barracks({ 0,1,0 }, 2000, &armorUpgrades));//TODO mouse pos
+	myBuildings.emplace_back(new Factory({ 0,1,0 }, 2000, &armorUpgrades));//TODO mouse pos
 
 }
+
 
 void Player::buildStructure(vec3 pos)
 {
-	//TODO UI budowania...
-	//inne budynki....
-	//myBuildings.push_back(new Barracks(pos, 2000, &armorUpgrades));//TODO mouse pos
-	myBuildings.emplace_back(new Barracks(pos, 2000, &armorUpgrades));//TODO mouse pos
-}
-
-void Player::trainUnit(shared_ptr<Building> target) {
-	//TODO jak wybrac budynek
-	
-	target->train(&weaponUpgrades, &armorUpgrades,5);
-	
+	{
+		//TODO building UI
+		//other buildings...
+		//myBuildings.push_back(new Barracks(pos, 2000, &armorUpgrades));//TODO mouse pos
+		myBuildings.emplace_back(new Factory(pos, 2000, &armorUpgrades));//TODO mouse pos
+	}
 }
 
 void Player::createWorker()
 {
-	//TODO UI budowania...
-	//inne budynki....
+	//TODO building UI
+	//other buildings...
 	//myUnits.push_back(new Worker("Test", "Mechanical", { 0,0,0 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
+
 	myUnits.emplace_back(new Worker("Test", "Mechanical", { 0,0,0 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
-	supply++;//TODO ustawic limit, potencjalnie wagi jednostek
+	//Unit* temp= new Worker("Test", "Mechanical", { 0,0,0 }, 25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades);
+	supply++;//TODO set limit? 
 }
 
 void Player::addNewUnit(Unit*temp)
 {
 	myUnits.emplace_back(temp);
-	supply++;//TODO ustawic limit, potencjalnie wagi jednostek
+	supply++;//TODO set limit...
 }
 
 vector<shared_ptr<Unit>> Player::getMyUnits()
@@ -160,8 +165,8 @@ void Player::clearSelectedUnits()
 
 vec3 Player::calculateFormation()
 {
-	float minZ = N;
-	float minX = N;
+	float minZ = GRIDSIZE;
+	float minX = GRIDSIZE;
 	float maxZ = 0;
 	float maxX = 0;
 	for (int i = 0; i < selectedUnits.size(); i++)
@@ -255,7 +260,7 @@ void Player::jumpToControlGroup(int at)
 {
 	selectedUnits = controlGroups[at];
 }
-void Player::cleanDeadEntities()
+void Player::cleanMyDeadEntities()
 {
 	if (myUnits.empty() && myBuildings.empty()) 
 		return;
@@ -268,7 +273,7 @@ void Player::cleanDeadEntities()
 		}
 		for (int i = 0; i < myUnits.size(); i++) {
 			if (myUnits.at(i)->getIsDead()){
-				player->grid->leave(myUnits.at(i)->getCurrentXPos(), myUnits.at(i)->getCurrentZPos());//TODO czyscimy wskazniki z gridu
+				this->grid->leave(myUnits.at(i)->getCurrentXPos(), myUnits.at(i)->getCurrentZPos());//TODO clearing pointers from grid.. testtestestest
 				myUnits.at(i).reset();
 				myUnits.erase(myUnits.begin() + i);
 				supply--;
@@ -288,11 +293,19 @@ void Player::clearMemory()
 		myUnits.at(i).reset();
 		myUnits.erase(myUnits.begin() + i);
 	}
-	//TODO przeniesc mineralfields gdzie indziej... zeby nie tylko gracz mial do nich dostep
+	//TODO move mineralfield somewhere else??
 }
 
 Player::~Player()
 {
 	delete(grid);
+}
+
+void Player::buildGenerator(const vec3& pos)
+{
+	//TODO building UI
+	//other buildings...
+	//myBuildings.push_back(new Barracks(pos, 2000, &armorUpgrades));//TODO mouse pos
+	myBuildings.emplace_back(new Generator(pos, 2000, &armorUpgrades));//TODO mouse pos
 }
 

@@ -1,13 +1,21 @@
 #pragma once
-#include "Building.h"
-class Barracks :public Building{
+
+class Factory :public Building{
 private:
 	
 public:
-	Barracks();
-	Barracks(vec3 Vpos ,unsigned int IHitPoints, unsigned int* armorUpgrades);
-	void train(unsigned int* weaponUpgrades, unsigned int* armorUpgrades, unsigned int time);
+	//TODO probably remove... move mechs into factory
+	Factory();
+	~Factory();
+	Factory(vec3 Vpos ,unsigned int IHitPoints, unsigned int* armorUpgrades);
 	void takeDamage();
-	~Barracks();
+	void drawSelf() override;
+	template<typename T>
+	void train(unsigned int* weaponUpgrades, unsigned int* armorUpgrades, unsigned int time)
+	{
+		
+	}
+	
+
 };
 

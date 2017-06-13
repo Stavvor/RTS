@@ -21,3 +21,7 @@ void Airport::train()
 Airport::~Airport()
 {
 }
+
+void Airport::drawSelf()
+{
+}

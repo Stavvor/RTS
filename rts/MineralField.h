@@ -3,8 +3,6 @@ class MineralField: public Targetable
 {
 private:
 	unsigned int resources;
-	vec3 position;
-	bool isEmpty;
 public:
 	MineralField();
 	MineralField(unsigned int, vec3);
@@ -12,5 +10,8 @@ public:
 	unsigned int getResources();
 
 	~MineralField();
+
+	void drawSelf() override;
+
 };
 

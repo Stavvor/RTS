@@ -22,7 +22,7 @@ public:
 	static bool mouseTriggerCameraLowerLeft;
 	static bool mouseTriggerCameraLowerRight;
 
-	//TODO floating camera z mouse 3
+	//TODO floating camera with mouse3
 	static bool mouseCameraFloatingMode;
 
 

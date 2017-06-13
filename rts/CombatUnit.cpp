@@ -25,7 +25,7 @@ void CombatUnit::attack(shared_ptr<Targetable>  target)
 {
 	if (targetInRange()) {
 		if(target->getHitPoints()> damage + 2 * (*this->upgrades->weaponUpgradesPtr))
-			target->takeDamage(damage + 2 * (*this->upgrades->weaponUpgradesPtr));  //TODO dodac wartosc upgradu gdy uporam sie z *owner (damage+owner->getWeaponUpgrades)
+			target->takeDamage(damage + 2 * (*this->upgrades->weaponUpgradesPtr));  
 		else
 		{
 
@@ -38,6 +38,11 @@ void CombatUnit::attack(shared_ptr<Targetable>  target)
 		cout << "za daleko" << endl;
 	}
 	
+}
+
+void CombatUnit::drawSelf()
+{
+
 }
 
 void CombatUnit::doAction()

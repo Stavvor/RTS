@@ -16,7 +16,7 @@ private:
 	vector<shared_ptr<Building>>myBuildings;
 	//vector <Unit*> myUnits;
 	vector<shared_ptr<Unit>>myUnits;
-	vec3 mousePos;
+	//vec3 mousePos;
 
 	vector <shared_ptr<Unit>>selectedUnits;
 	SCameraState cameraHotkeys[12];
@@ -24,18 +24,39 @@ private:
 
 
 public:
-	BuildingGrid* grid;
-	struct Details* details; //struktura z atrybutami gracza (latwiejsze rozwiazanie upgradow itd);
+	
 	Player(string);
+	~Player();
+
+	template<typename T>
+	void buildStructure(vec3 pos)
+	{
+		//TODO building UI
+		//other buildings...
+		//myBuildings.push_back(new Barracks(pos, 2000, &armorUpgrades));//TODO mouse pos
+		myBuildings.emplace_back(new T(pos, 2000, &armorUpgrades));//TODO mouse pos
+	}
+
+	template<typename T>
+	void Player::trainUnit(shared_ptr<Building> target,unsigned int buildTime) {
+		//TODO how to choose building... static? control groups?
+		target->train<T>(&weaponUpgrades, &armorUpgrades, buildTime);
+	}
+
+	Grid* grid;
+	struct Details* details; 
+
+
 	unsigned int getResources();
 	void updateResources(unsigned int);
 	unsigned int getEnergy();
+	void updateEnergy(unsigned int);
 	unsigned int getWeaponUpgrades();
 	unsigned int getArmorUpgrades();
 	unsigned int* getWeaponUpgradesPtr();
 	unsigned int* getArmorUpgradesPtr();
 	unsigned int getSupply();
-	string getSupplyToPrint();// latwiej dodac do wyswietlania "/"
+	string getSupplyToPrint();
 
 	void upgradeWeapons();
 	void upgradeArmor();
@@ -48,12 +69,13 @@ public:
 	void repair(Worker* selected);
 	//TODO obsluga myszki
 
+	
 	void buildStructure();
 	void buildStructure(vec3 pos);
-	void trainUnit(shared_ptr<Building> target);
+//	void trainUnit(shared_ptr<Building> target);
 	void createWorker();
 	
-	void addNewUnit(Unit*);//docelowa funkcja budowania; kolejki budynkow popuja wskazniki po danym czasem a ta funkcja wrzuca do vectora..
+	void addNewUnit(Unit*);
 
 	vector<shared_ptr<Unit>> getMyUnits();
 	vector<shared_ptr<Building>> getMyBuildings();
@@ -66,10 +88,11 @@ public:
 	void addToControlGroup(int, vector<shared_ptr<Unit>> selectedUnits);
 	void jumpToControlGroup(int);
 
-	void cleanDeadEntities();
+	void cleanMyDeadEntities();
 	void clearMemory();
 
-	~Player();
+	
+	void buildGenerator(const vec3& pos);
 };
 
 /*

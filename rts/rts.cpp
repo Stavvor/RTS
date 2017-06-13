@@ -1,387 +1,20 @@
 #include "stdafx.h"
-#pragma warning (disable : 4996)
+#include "rts.h"
 
-void attackCooldown(int);
-void actionTimer(int);
-void unitDetails(int);
-void queueManager(int);
-void posManager(int a);
-void attackManager(int a);
-
-void OnRender();
-void OnReshape(int, int);
-void OnKeyPress(unsigned char, int, int);
-void OnKeyDown(unsigned char, int, int);
-void OnKeyUp(unsigned char, int, int);
-void OnTimer(int);
-void OnSpecialKeyPress(int key, int x, int y);
-void OnSpecialKeyUp(int key, int x, int y);
-
-void OnModifiedDown(unsigned char key, int i, int y);
-
-void OnMouseKeyPress(int button, int state, int x, int y);
-void OnMouseKeyUp(int button, int state, int x, int y);
-void MouseCords(int x, int y);
-void mouseWheel(int button, int dir, int x, int y);
-
-mousePos mouseLeftClickPos_start;
-mousePos mouseLeftClickPos_end;
-mousePos mouseLeftUpPos_start;
-mousePos mouseLeftUpPos_end;
-
-void raycast(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
-void raycastEnd(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end);
-unsigned char*	      imageData;		   // the map image data
-unsigned char*       landTexture;	   // land texture data
-unsigned int		   land;			      // the land texture object
-
-void renderBitmapString(float x, float y, void *font, int num) {
-	glDisable(GL_LIGHTING);
-	const char *c;
-	glRasterPos2f(x, y);
-	string str=to_string(num);
-	const char* cstr=str.c_str();
-	for (c = cstr; *c != '\0'; c++) {
-		glutBitmapCharacter(font, *c);
-	}
-	glEnable(GL_LIGHTING);
-}
-
-void renderBitmapString(float x, float y, void *font, const char *string) {
-	glDisable(GL_LIGHTING);
-	const char *c;
-	glRasterPos2f(x, y);
-	for (c = string; *c != '\0'; c++) {
-		glutBitmapCharacter(font, *c);
-	}
-	glEnable(GL_LIGHTING);
-}
-
-int w, h;
-
-void drawHealth(float health) {
-	glBegin(GL_QUADS);
-	glColor3f(1, 0, 0);
-	glVertex2f(0, 0);
-	glVertex2f(1, 0);
-	glVertex2f(1, health);
-	glVertex2f(0, health);
-	glEnd();
-}
-
-void setOrthographicProjection() {
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(0, w, 0, h);
-	glScalef(1, -1, 1);
-	glTranslatef(0, -h, 0);
-	glMatrixMode(GL_MODELVIEW);
-}
-
-void resetPerspectiveProjection() {
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-}
-struct SFace {
-	int v[3];
-	int n[3];
-	int t[3];
-};
-
-GLuint LoadObj(char * file) {
-
-	FILE * fp = fopen(file, "r");
-
-	if (fp == NULL) {
-		printf("ERROR: Cannot read model file \"%s\".\n", file);
-		return -1;
-	}
-
-	std::vector<vec3> * v = new std::vector<vec3>();
-	std::vector<vec3> * n = new std::vector<vec3>();
-	std::vector<vec3> * t = new std::vector<vec3>();
-	std::vector<SFace> * f = new std::vector<SFace>();
-
-	char buf[128];
-
-	while (fgets(buf, 128, fp) != NULL) {
-		if (buf[0] == 'v' && buf[1] == ' ') {
-			vec3 * vertex = new vec3();
-			sscanf_s(buf, "v %f %f %f", &vertex->x, &vertex->y, &vertex->z);
-			v->push_back(*vertex);
-		}
-		if (buf[0] == 'v' && buf[1] == 't') {
-			vec3 * vertex = new vec3();
-			sscanf_s(buf, "vt %f %f", &vertex->x, &vertex->y);
-			t->push_back(*vertex);
-		}
-		if (buf[0] == 'v' && buf[1] == 'n') {
-			vec3 * vertex = new vec3();
-			sscanf_s(buf, "vn %f %f %f", &vertex->x, &vertex->y, &vertex->z);
-			n->push_back(*vertex);
-		}
-		if (buf[0] == 'f' && buf[1] == ' ') {
-			SFace * face = new SFace();
-			sscanf_s(buf, "f %d/%d/%d %d/%d/%d %d/%d/%d",
-				&face->v[0], &face->t[0], &face->n[0],
-				&face->v[1], &face->t[1], &face->n[1],
-				&face->v[2], &face->t[2], &face->n[2]
-			);
-			f->push_back(*face);
-		}
-	}
-
-	fclose(fp);
-
-	GLuint dlId;
-	dlId = glGenLists(1);
-	glNewList(dlId, GL_COMPILE);
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < f->size(); ++i) {
-		for (int j = 0; j < 3; ++j) {
-		
-				vec3 * cv = &(*v)[((*f)[i].v[j] - 1)];
-				vec3 * ct = &(*t)[((*f)[i].t[j] - 1)];
-				vec3 * cn = &(*n)[((*f)[i].n[j] - 1)];
-				
-			glTexCoord2f(ct->x, ct->y);
-			glNormal3f(cn->x, cn->y, cn->z);
-			glVertex3f(cv->x, cv->y, cv->z);
-		}
-	}
-	glEnd();
-	glEndList();
-
-	delete v;
-	delete n;
-	delete t;
-	delete f;
-
-	return dlId;
-
-}
-
-vec3 destStart;
-vec3 destEnd;
+Game* game;
 Player* player;
-Targetable* mineral;
-SCameraState playerCamera;
+SoundPlayer* soundPlayer;
 
-GLuint mechv1gora;
-GLuint mechv1nogi;
-GLuint mechv1gatlingi;
-GLuint mechv1tasma;
+vector<shared_ptr<Targetable>> minerals;//TODO wywalic stad...
 
-GLuint tankT2;
-GLuint tankT2Wieza;
-GLuint tankT2Dzialko;
 int mouseX;
 int mouseY;
+
 int oldTimeSinceStart = 0;
-struct Point
-{
-	float x, y;
-	Point(float x = 0, float y = 0) :x(x), y(y) {};
-};
 
-struct AABB
-{
-	Point centre;
-	Point halfSize;
+int w;
+int h;
 
-	AABB(Point centre = Point(), Point halfSize = Point()) : centre(centre), halfSize(halfSize) {};
-
-	bool contains(Point a)
-	{
-		if (a.x < centre.x + halfSize.x && a.x > centre.x - halfSize.x)
-		{
-			if (a.y < centre.y + halfSize.y && a.y > centre.y - halfSize.y)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	bool intersects(AABB other)
-	{
-		//this right > that left                                          this left <s that right
-		if (centre.x + halfSize.x > other.centre.x - other.halfSize.x || centre.x - halfSize.x < other.centre.x + other.halfSize.x)
-		{
-			// This bottom > that top
-			if (centre.y + halfSize.y > other.centre.y - other.halfSize.y || centre.y - halfSize.y < other.centre.y + other.halfSize.y)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-};
-
-template <typename T>
-struct Data
-{
-	Point pos;
-	T load;/////////////////////////////////////////////////
-
-	Data(Point pos = Point(), T data = NULL) : pos(pos), load(data) {};
-};
-
-
-template <class T>
-class Quadtree
-{
-private:
-	//4 children
-	Quadtree* nw;
-	Quadtree* ne;
-	Quadtree* sw;
-	Quadtree* se;
-
-	AABB boundary;
-
-	std::vector< Data<T> > objects;
-
-	int CAPACITY;
-public:
-	Quadtree<T>();
-	Quadtree<T>(AABB boundary);
-
-	~Quadtree();
-
-	bool insert(Data<T> d);
-	void subdivide();
-	std::vector< Data<T> > queryRange(AABB range);
-};
-
-template <class T>
-Quadtree<T>::Quadtree()
-{
-	CAPACITY = 4;
-	nw = NULL;
-	ne = NULL;
-	sw = NULL;
-	se = NULL;
-	boundary = AABB();
-	objects = std::vector< Data<T> >();
-}
-
-template <class T>
-Quadtree<T>::Quadtree(AABB boundary)
-{
-	objects = std::vector< Data<T> >();
-	CAPACITY = 4;
-	nw = NULL;
-	ne = NULL;
-	sw = NULL;
-	se = NULL;
-	this->boundary = boundary;
-}
-
-template <class T>
-Quadtree<T>::~Quadtree()
-{
-	delete nw;
-	delete sw;
-	delete ne;
-	delete se;
-}
-
-template <class T>
-void Quadtree<T>::subdivide()
-{
-	Point qSize = Point(boundary.halfSize.x, boundary.halfSize.y);
-	Point qCentre = Point(boundary.centre.x - qSize.x, boundary.centre.y - qSize.y);
-	nw = new Quadtree(AABB(qCentre, qSize));
-
-	qCentre = Point(boundary.centre.x + qSize.x, boundary.centre.y - qSize.y);
-	ne = new Quadtree(AABB(qCentre, qSize));
-
-	qCentre = Point(boundary.centre.x - qSize.x, boundary.centre.y + qSize.y);
-	sw = new Quadtree(AABB(qCentre, qSize));
-
-	qCentre = Point(boundary.centre.x + qSize.x, boundary.centre.y + qSize.y);
-	se = new Quadtree(AABB(qCentre, qSize));
-}
-
-template <class T>
-bool Quadtree<T>::insert(Data<T> d)
-{
-	if (!boundary.contains(d.pos))
-	{
-		return false;
-	}
-
-	if (objects.size() < CAPACITY)
-	{
-		objects.push_back(d);
-		return true;
-	}
-
-	if (nw == NULL)
-	{
-		subdivide();
-	}
-
-	if (nw->insert(d))
-	{
-		return true;
-	}
-	if (ne->insert(d))
-	{
-		return true;
-	}
-	if (sw->insert(d))
-	{
-		return true;
-	}
-	if (se->insert(d))
-	{
-		return true;
-	}
-
-	return false;
-}
-
-template <class T>
-std::vector< Data<T> > Quadtree<T>::queryRange(AABB range)
-{
-	std::vector< Data<T> > pInRange;
-
-	if (!boundary.intersects(range))
-	{
-		return pInRange;
-	}
-
-	for (int i = 0; i < objects.size(); i++)
-	{
-		if (range.contains(objects.at(i).pos))
-		{
-			pInRange.push_back(objects.at(i));
-		}
-	}
-
-	if (nw == NULL)
-	{
-		return pInRange;
-	}
-
-	std::vector< Data<T> > temp = nw->queryRange(range);
-	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
-
-	temp = ne->queryRange(range);
-	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
-
-	temp = sw->queryRange(range);
-	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
-
-	temp = se->queryRange(range);
-	pInRange.insert(pInRange.end(), temp.begin(), temp.end());
-
-	return pInRange;
-}
 int main(int argc, char**argv){
 
 	
@@ -592,6 +225,7 @@ int main(int argc, char**argv){
 	glutTimerFunc(17, posManager, 0);
 	glutTimerFunc(17, attackManager, 0);
 	glutTimerFunc(1200, attackCooldown, 0);
+	//glutIgnoreKeyRepeat(1); //TODO sprwdzic repetycje
 	
 	player = new Player("testPlayer");
 	
@@ -603,9 +237,6 @@ int main(int argc, char**argv){
 	player->trainUnit(player->getMyBuildings()[0]);
 	player->getMyUnits()[2]->setPosition({ 4.0f,0.0f,3.0f });
 	*/
-
-	mineral = new MineralField();	//TODO zrobic narzedzie do czyszczenia entities nie nalezacych do gracza
-	player->grid = new BuildingGrid();
 	
 	//player->createWorker();
 	//player->getMyUnits()[0]->setTarget(mineral);
@@ -616,17 +247,6 @@ int main(int argc, char**argv){
 	
 	//player->getMyUnits()[0]->getHasMinerals();
 	//cout << player->getResources() << endl;
-
-
-	mechv1gora = LoadObj("resources/glowa.obj");
-	mechv1nogi = LoadObj("resources/nogi.obj");
-	mechv1gatlingi = LoadObj("resources/gatling.obj");
-	mechv1tasma = LoadObj("resources/mechTasma.obj");
-
-
-	tankT2 = LoadObj("resources/TankT2.obj");
-	tankT2Wieza = LoadObj("resources/TankT2Wieza.obj");
-	tankT2Dzialko = LoadObj("resources/TankT2Dzialko.obj");
 
 	glEnable(GL_DEPTH_TEST);
 	const GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -651,19 +271,40 @@ int main(int argc, char**argv){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glShadeModel(GL_SMOOTH);
+	
 
-	playerCamera.pos.x = 0.0f;
-	playerCamera.pos.y = 3.75f;
-	playerCamera.pos.z = 0.0f;
+	Resources* resources;
+	resources = new Resources;
+	Resources::loadModels();
 
-	playerCamera.dir.x = 1.0f;
-	playerCamera.dir.y = -1.0f;
-	playerCamera.dir.z = 1.0f;
+	game = new Game();
+	player->grid->prepareGrid();
+	game->initCamera();
+	resources->setLayout();
+	game->spawnMinerals(resources->mineralLayout);
+	
+	soundPlayer = new SoundPlayer;
+	soundPlayer->loadAllSounds();
+	soundPlayer->playSound(soundPlayer->terran1);
+	
+	//game->playMusic();
 
-	playerCamera.speed = .1f;
+	//Resources::loadTextures();
+	
+	
+	//TODO gamemode menu....
 
-	glutMainLoop();
-
+	while(!KeyFlags::keystate[27])
+	{
+		glutMainLoopEvent();
+		//glutMainLoop();
+	}
+	
+	player->clearMemory();
+	delete player;
+	delete game;
+	delete soundPlayer;
+	delete resources;
 	return 0;
 }
 
@@ -679,13 +320,11 @@ void OnKeyPress(unsigned char key, int x, int y) {
 void OnKeyDown(unsigned char key, int x, int y) {
 	//printf("KeyDown: %c\n", key);
 	
-	if (key == 27) { // ESC - wyjœcie
+	/*if (key == 27) { // ESC - wyjœcie
 		//TODO czyscic pamiec przed zakonczeniem gry
-		player->clearMemory();
-		delete(player);
-		delete(mineral);
+		
 		glutLeaveMainLoop(); //TODO WTF dlaczego
-	}
+	}*/
 	if (glutGetModifiers() == 2)
 	{
 		switch (key)
@@ -720,8 +359,48 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		case 16:
 			player->addToControlGroup(9, player->getSelectedUnits());
 			break;
+		
 		}
 	}
+	if(glutGetModifiers()== 1)
+	{
+		switch(key)
+		{
+		case 'Q'://'q' || 'Q' //tODO resolve
+		
+			for (auto building : player->getMyBuildings())
+			{
+				player->trainUnit<MechT2>(building, 5);
+			}
+			break;
+		
+		case 'W':
+		
+			for (auto building : player->getMyBuildings())
+			{
+				player->trainUnit<TankT2>(building, 5);
+			}
+			break;
+		
+		case 'E':
+		
+			for (auto building : player->getMyBuildings())
+			{
+				player->trainUnit<FighterT2>(building, 5);
+			}
+			break;
+		
+		case 'R':
+		
+			for (auto building : player->getMyBuildings())
+			{
+				player->trainUnit<BomberT2>(building, 5);
+			}
+			break;
+		
+		}
+	}
+
 	switch (key)
 	{
 	case '1':
@@ -755,6 +434,57 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		player->jumpToControlGroup(9);
 		break;
 	}
+	switch(key)
+	{
+	case 'q':
+	{
+		for (auto building : player->getMyBuildings())
+		{
+			player->trainUnit<MechT1>(building, 5);
+		}
+		break;
+	}
+	case 'w':
+	{
+		for (auto building : player->getMyBuildings())
+		{
+			player->trainUnit<TankT1>(building, 5);
+		}
+		break;
+	}
+	case 'e':
+	{
+		for (auto building : player->getMyBuildings())
+		{
+			player->trainUnit<FighterT1>(building, 5);
+		}
+		break;
+	}
+	case 'r':
+	{
+		for (auto building : player->getMyBuildings())
+		{
+			player->trainUnit<BomberT1>(building, 5);
+		}
+		break;
+	}
+	case 't':
+	{
+		
+		player->createWorker();//TODO FIX
+	}
+
+	case 's':{
+		for (auto unit : player->getSelectedUnits())
+		{
+			unit->setDestination(unit->getPosition());
+			unit->dir = unit->dir;
+		}
+	}
+		break;
+	 
+	}
+
 }
 
 void OnKeyUp(unsigned char key, int x, int y) {
@@ -776,7 +506,7 @@ void OnTimer(int id) {
 	}
 	for(auto unit : player->getMyUnits())
 	{
-		auto potentialCollision = quadtree.queryRange(AABB(Point(unit->getPosition().x, unit->getPosition().z), Point(9.0, 9.0)));
+		auto potentialCollision = quadtree.queryRange(AABB(Point(unit->getPosition().x, unit->getPosition().z), Point(4.0, 4.0)));
 		if(potentialCollision.size()==1)
 		{
 			continue;
@@ -817,8 +547,6 @@ void OnTimer(int id) {
 					collidingUnit.load->dir=collidingUnitDirection;
 					collidingUnit.load->setDestination(newDest);*/
 					//collidingUnit.load->setDestination(collidingUnit.load->getPosition());
-
-
 				}
 			}
 		}
@@ -839,6 +567,7 @@ void OnTimer(int id) {
 		float estTarget = 0.1;
 		if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
 		{
+			unit->calculateVecAngle();
 			unit->setPosition(newPos);
 			unit->setIsMoving(true);
 		}
@@ -896,68 +625,61 @@ void OnTimer(int id) {
 		}
 		 */
 		if (KeyFlags::isUpKeyPressed || KeyFlags::mouseTriggerCameraUp) {
-			playerCamera.pos.x += playerCamera.dir.x * playerCamera.speed;
+			Game::playerCamera.pos.x += Game::playerCamera.dir.x * Game::playerCamera.speed;
 			//playerCamera.pos.y += playerCamera.dir.y * playerCamera.speed;
-			playerCamera.pos.z += playerCamera.dir.z * playerCamera.speed;
+			Game::playerCamera.pos.z += Game::playerCamera.dir.z * Game::playerCamera.speed;
+
 		}
 
 		if (KeyFlags::isDownKeyPressed || KeyFlags::mouseTriggerCameraDown) {
-			playerCamera.pos.x -= playerCamera.dir.x * playerCamera.speed;
+			Game::playerCamera.pos.x -= Game::playerCamera.dir.x * Game::playerCamera.speed;
 			//playerCamera.pos.y -= playerCamera.dir.y * playerCamera.speed;
-			playerCamera.pos.z -= playerCamera.dir.z * playerCamera.speed;
+			Game::playerCamera.pos.z -= Game::playerCamera.dir.z * Game::playerCamera.speed;
 		}
 
 		if (KeyFlags::isLeftKeyPressed || KeyFlags::mouseTriggerCameraLeft) {
-
-			playerCamera.pos.x += playerCamera.dir.z * playerCamera.speed;
-			playerCamera.pos.z += -playerCamera.dir.x * playerCamera.speed;
+			Game::playerCamera.pos.x += Game::playerCamera.dir.z * Game::playerCamera.speed;
+			Game::playerCamera.pos.z += -Game::playerCamera.dir.x * Game::playerCamera.speed;
 		}
 
 		if (KeyFlags::isRightKeyPressed || KeyFlags::mouseTriggerCameraRight) {
-			playerCamera.pos.x -= playerCamera.dir.z * playerCamera.speed;
-			playerCamera.pos.z -= -playerCamera.dir.x * playerCamera.speed;
+			Game::playerCamera.pos.x -= Game::playerCamera.dir.z * Game::playerCamera.speed;
+			Game::playerCamera.pos.z -= -Game::playerCamera.dir.x * Game::playerCamera.speed;
 		}
 		//TODO skosy
-
-		if (KeyFlags::keystate['b']) {
-			for(auto building : player->getMyBuildings())
-			{
-				player->trainUnit(building);
-			}
-
-		}
-		if (KeyFlags::keystate['w']) {
-
-
-			//player->createWorker();
-		}
-	    
 		if (KeyFlags::keystate['q']) {
-			float b = atan2(playerCamera.dir.z, playerCamera.dir.x);
-			float a = -0.05f;
-			playerCamera.dir.x = cos(b + a);
-			playerCamera.dir.z = sin(b + a);
-		}
-		//obrot w prawo
+				float b = atan2(Game::playerCamera.dir.z, Game::playerCamera.dir.x);
+				float a = -0.05f;
+
+				Game::playerCamera.dir.x = cos(b + a);
+				Game::playerCamera.dir.z = sin(b + a);
+			/*for(auto unit: player->getMyUnits())	//TODO test miningu, przenisc
+			{
+				vec3 myPos = unit->getPosition();
+				shared_ptr<Targetable> closest;
+				float maxDistance = GRIDSIZE*sqrt(2);
+				for(auto mineral : game->getEntities())
+				{
+					vec3 targetPos = mineral->getPosition();
+					float distance=sqrt(pow((myPos.x - targetPos.x), 2) + pow((myPos.y - targetPos.y), 2) + pow((myPos.z - targetPos.z), 2));
+					if(distance<=maxDistance)
+					{
+						closest = mineral;
+						maxDistance = distance;
+					}
+				}
+				unit->setTarget(closest);
+			}*/
+	
+			}
 		if (KeyFlags::keystate['e']) {
-			float b = atan2(playerCamera.dir.z, playerCamera.dir.x);
-			float a = 0.05f;
+				float a = atan2(Game::playerCamera.dir.z, Game::playerCamera.dir.x);
+				float b = 0.05f;
 
-			playerCamera.dir.x = cos(b + a);
-			playerCamera.dir.z = sin(b + a);
-		}
-		/**/
-		if (KeyFlags::keystate['s']) {
-			for (auto unit : player->getSelectedUnits())
-			{
-				unit->setDestination(unit->getPosition());
-				unit->dir = unit->dir;
+				Game::playerCamera.dir.x = cos(a + b);
+				Game::playerCamera.dir.z = sin(a + b);
 			}
-		}
-		if (KeyFlags::keystate['q']) {
-			//TODO zmienic kursor do patrolu
-			//moze wrzicic do callbacka myszki?
-		}
+		
 		/*	if (glutGetModifiers() == 2) {
 				switch (key)
 				{
@@ -1008,40 +730,40 @@ void OnSpecialKeyPress(int key, int x, int y)
 		switch (key)
 		{
 		case GLUT_KEY_F1:
-			player->setCameraHotkey(1, playerCamera);
+			player->setCameraHotkey(1, Game::playerCamera);
 			break;
 		case GLUT_KEY_F2:
-			player->setCameraHotkey(2, playerCamera);
+			player->setCameraHotkey(2, Game::playerCamera);
 			break;
 		case GLUT_KEY_F3:
-			player->setCameraHotkey(3, playerCamera);
+			player->setCameraHotkey(3, Game::playerCamera);
 			break;
 		case GLUT_KEY_F4:
-			player->setCameraHotkey(4, playerCamera);
+			player->setCameraHotkey(4, Game::playerCamera);
 			break;
 		case GLUT_KEY_F5:
-			player->setCameraHotkey(5, playerCamera);
+			player->setCameraHotkey(5, Game::playerCamera);
 			break;
 		case GLUT_KEY_F6:
-			player->setCameraHotkey(6, playerCamera);
+			player->setCameraHotkey(6, Game::playerCamera);
 			break;
 		case GLUT_KEY_F7:
-			player->setCameraHotkey(7, playerCamera);
+			player->setCameraHotkey(7, Game::playerCamera);
 			break;
 		case GLUT_KEY_F8:
-			player->setCameraHotkey(8, playerCamera);
+			player->setCameraHotkey(8, Game::playerCamera);
 			break;
 		case GLUT_KEY_F9:
-			player->setCameraHotkey(9, playerCamera);
+			player->setCameraHotkey(9, Game::playerCamera);
 			break;
 		case GLUT_KEY_F10:
-			player->setCameraHotkey(10, playerCamera);
+			player->setCameraHotkey(10, Game::playerCamera);
 			break;
 		case GLUT_KEY_F11:
-			player->setCameraHotkey(11, playerCamera);
+			player->setCameraHotkey(11, Game::playerCamera);
 			break;
 		case GLUT_KEY_F12:
-			player->setCameraHotkey(12, playerCamera);
+			player->setCameraHotkey(12, Game::playerCamera);
 			break;
 		}
 	}
@@ -1077,40 +799,40 @@ void OnSpecialKeyPress(int key, int x, int y)
 		switch (key)
 		{
 		case GLUT_KEY_F1:
- 			playerCamera = player->jumpToCameraHotkey(1);
+			Game::playerCamera = player->jumpToCameraHotkey(1);
 			break;
 		case GLUT_KEY_F2:
-			playerCamera = player->jumpToCameraHotkey(2);
+			Game::playerCamera = player->jumpToCameraHotkey(2);
 			break;
 		case GLUT_KEY_F3:
-			playerCamera = player->jumpToCameraHotkey(3);
+			Game::playerCamera = player->jumpToCameraHotkey(3);
 			break;
 		case GLUT_KEY_F4:
-			playerCamera = player->jumpToCameraHotkey(4);
+			Game::playerCamera = player->jumpToCameraHotkey(4);
 			break;
 		case GLUT_KEY_F5:
-			playerCamera = player->jumpToCameraHotkey(5);
+			Game::playerCamera = player->jumpToCameraHotkey(5);
 			break;
 		case GLUT_KEY_F6:
-			playerCamera = player->jumpToCameraHotkey(6);
+			Game::playerCamera = player->jumpToCameraHotkey(6);
 			break;
 		case GLUT_KEY_F7:
-			playerCamera = player->jumpToCameraHotkey(7);
+			Game::playerCamera = player->jumpToCameraHotkey(7);
 			break;
 		case GLUT_KEY_F8:
-			playerCamera = player->jumpToCameraHotkey(8);
+			Game::playerCamera = player->jumpToCameraHotkey(8);
 			break;
 		case GLUT_KEY_F9:
-			playerCamera = player->jumpToCameraHotkey(9);
+			Game::playerCamera = player->jumpToCameraHotkey(9);
 			break;
 		case GLUT_KEY_F10:
-			playerCamera = player->jumpToCameraHotkey(10);
+			Game::playerCamera = player->jumpToCameraHotkey(10);
 			break;
 		case GLUT_KEY_F11:
-			playerCamera = player->jumpToCameraHotkey(11);
+			Game::playerCamera = player->jumpToCameraHotkey(11);
 			break;
 		case GLUT_KEY_F12:
-			playerCamera = player->jumpToCameraHotkey(12);
+			Game::playerCamera = player->jumpToCameraHotkey(12);
 			break;
 
 		}
@@ -1140,7 +862,7 @@ void OnModifiedDown(unsigned char key, int i, int y)
 	
 }
 
-void raycast(int x,int y,vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end)
+void raycast(int x,int y,vec3* dest, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end)
 {
 	double matModelView[16], matProjection[16];
 	int viewport[4];
@@ -1149,16 +871,25 @@ void raycast(int x,int y,vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_c
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	double winX = (double)x;
 	double winY = viewport[3] - (double)y;
-	gluUnProject(winX, winY, 0.0, matModelView, matProjection, viewport, &mouseLeftClickPos_start.x, &mouseLeftClickPos_start.y, &mouseLeftClickPos_start.z);
-	gluUnProject(winX, winY, 1.0, matModelView, matProjection, viewport, &mouseLeftClickPos_end.x, &mouseLeftClickPos_end.y, &mouseLeftClickPos_end.z);
+	gluUnProject(winX, winY, 0.0, matModelView, matProjection, viewport, &Mouse::mouseLeftClickPos_start.x, &Mouse::mouseLeftClickPos_start.y, &Mouse::mouseLeftClickPos_start.z);
+	gluUnProject(winX, winY, 1.0, matModelView, matProjection, viewport, &Mouse::mouseLeftClickPos_end.x, &Mouse::mouseLeftClickPos_end.y, &Mouse::mouseLeftClickPos_end.z);
 	//cout << "x: " << m_start.x << "y: " << m_start.y << "z: " << m_start.z << endl;
-	destStart.y = 1.0f;
-	float t = (0 - mouseLeftClickPos_start.y) / (mouseLeftClickPos_end.y - mouseLeftClickPos_start.y);
-	destStart.x = t*(mouseLeftClickPos_end.x - mouseLeftClickPos_start.x) + mouseLeftClickPos_start.x;
-	destStart.z = t*(mouseLeftClickPos_end.z - mouseLeftClickPos_start.z) + mouseLeftClickPos_start.z;
+	dest->y = 1.0f;
+	float t = (0 - Mouse::mouseLeftClickPos_start.y) / (Mouse::mouseLeftClickPos_end.y - Mouse::mouseLeftClickPos_start.y);
+	
+	dest->x = t*(Mouse::mouseLeftClickPos_end.x - Mouse::mouseLeftClickPos_start.x) + Mouse::mouseLeftClickPos_start.x;
+	/*if (dest->x < 0)
+		dest->x = 0;
+	if (dest->x > GRIDSIZE)
+		dest->x = GRIDSIZE;*/
+	dest->z = t*(Mouse::mouseLeftClickPos_end.z - Mouse::mouseLeftClickPos_start.z) + Mouse::mouseLeftClickPos_start.z;
+	/*if (dest->z < 0)
+		dest->z = 0;
+	if (dest->z > GRIDSIZE)
+		dest->z = GRIDSIZE;*/
 
 }
-void raycastEnd(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end)
+void raycastEnd(int x, int y, vec3* dest, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end)
 {
 	double matModelView[16], matProjection[16];
 	int viewport[4];
@@ -1167,38 +898,68 @@ void raycastEnd(int x, int y, vec3* vec3, mousePos* mouse_pos, mousePos* mouse_l
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	double winX = (double)x;
 	double winY = viewport[3] - (double)y;
-	gluUnProject(winX, winY, 0.0, matModelView, matProjection, viewport, &mouseLeftUpPos_start.x, &mouseLeftUpPos_start.y, &mouseLeftUpPos_start.z);
-	gluUnProject(winX, winY, 1.0, matModelView, matProjection, viewport, &mouseLeftUpPos_end.x, &mouseLeftUpPos_end.y, &mouseLeftUpPos_end.z);
+	gluUnProject(winX, winY, 0.0, matModelView, matProjection, viewport, &Mouse::mouseLeftUpPos_start.x, &Mouse::mouseLeftUpPos_start.y, &Mouse::mouseLeftUpPos_start.z);
+	gluUnProject(winX, winY, 1.0, matModelView, matProjection, viewport, &Mouse::mouseLeftUpPos_end.x, &Mouse::mouseLeftUpPos_end.y, &Mouse::mouseLeftUpPos_end.z);
 	//cout << "x: " << m_start.x << "y: " << m_start.y << "z: " << m_start.z << endl;
-	destEnd.y = 1.0f;
-	float t = (0 - mouseLeftUpPos_start.y) / (mouseLeftUpPos_end.y - mouseLeftUpPos_start.y);
-	destEnd.x = t*(mouseLeftUpPos_end.x - mouseLeftUpPos_start.x) + mouseLeftUpPos_start.x;
-	destEnd.z = t*(mouseLeftUpPos_end.z - mouseLeftUpPos_start.z) + mouseLeftUpPos_start.z;
+	dest->y = 1.0f;
+	float t = (0 - Mouse::mouseLeftUpPos_start.y) / (Mouse::mouseLeftUpPos_end.y - Mouse::mouseLeftUpPos_start.y);
+	dest->x = t*(Mouse::mouseLeftUpPos_end.x - Mouse::mouseLeftUpPos_start.x) + Mouse::mouseLeftUpPos_start.x;
+	if (dest->x < 0)
+		dest->x = 0;
+	if (dest->x > GRIDSIZE)
+		dest->x = GRIDSIZE;
+	dest->z = t*(Mouse::mouseLeftUpPos_end.z - Mouse::mouseLeftUpPos_start.z) + Mouse::mouseLeftUpPos_start.z;
+	if (dest->z < 0)
+		dest->z = 0;
+	if (dest->z > GRIDSIZE)
+		dest->z = GRIDSIZE;
 }
 void OnMouseKeyPress(int button, int state, int x, int y)
 {
-	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP)) {//TODO sprawdizc w sc
-		if (KeyFlags::keystate['g'])
+	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP)) {//TODO check in sc
+		if (KeyFlags::keystate['w'] || KeyFlags::keystate['W'])
 		{
-			if (player->grid->testGrid(4, floor(destStart.x), floor(destStart.z)))
+			if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
 			{
-				vec3 pos = { floor(destStart.x),1.0f,floor(destStart.z) };
-				player->buildStructure(pos);
+				vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
+				player->buildStructure<Generator>(pos);
 			}
-			//TODO implementacja amove; unit->moveTo(dest); maja atakowac wszystko po drodze
+			//TODO a move implementation
 		}
+		if (KeyFlags::keystate['e'] || KeyFlags::keystate['E'])
+		{
+			if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
+			{
+				vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
+				
+				player->buildStructure<Factory>(pos);
+			}
+			//TODO a move implementation
+		}
+		if (KeyFlags::keystate['r'] || KeyFlags::keystate['R'])
+		{
+			if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
+			{
+				vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
+
+				player->buildStructure<Factory>(pos);
+			}
+			//TODO a move implementation
+		}
+		//TODO if 'T' 
+		//structure (HQ)
+		
 	}
 
 	if ((button == GLUT_RIGHT_BUTTON) && (state == GLUT_DOWN)) {
-		raycast(x, y, &destStart, &mouseLeftClickPos_start, &mouseLeftClickPos_end);
+		raycastEnd(x, y, &Mouse::moveTo, &Mouse::mouseLeftClickPos_start, &Mouse::mouseLeftClickPos_end);
 
 		if(player->getSelectedUnits().size()==1){
 			for (auto unit : player->getSelectedUnits())
 			{
-				
 				if (unit->getTarget() != NULL)
 					unit->setTarget(NULL);
-				unit->setDestination(destStart);
+				unit->setDestination(Mouse::moveTo);
 				unit->dir.x = unit->getDestination().x - unit->getPosition().x;
 				unit->dir.z = unit->getDestination().z - unit->getPosition().z;
 
@@ -1211,9 +972,9 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 		{
 			auto unit = player->getSelectedUnits();
 			//vec2 formationDest(destStart.x, destStart.z);
-			auto destinations=player->calculateFormationDestinations(player->calculateFormation(),destStart);
+			auto destinations=player->calculateFormationDestinations(player->calculateFormation(), Mouse::moveTo);
 			//auto destinations = player->calculateFormationDestinations(formationDest);
-			cout << destStart << endl;
+			//cout << Mouse::destStart << endl;
 			for(int i=0;i<unit.size();i++)
 			{
 				if (unit[i]->getTarget() != NULL)
@@ -1235,7 +996,7 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 
 
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN)) {
-		raycast(x, y, &destStart, &mouseLeftClickPos_start, &mouseLeftClickPos_end);
+		raycast(x, y, &Mouse::destStart, &Mouse::mouseLeftClickPos_start, &Mouse::mouseLeftClickPos_end);
 		/*
 		double matModelView[16], matProjection[16];
 		int viewport[4];
@@ -1259,7 +1020,7 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP)) {
 		//cout << "puszczono lewy przycisk" << endl;
 
-		raycastEnd(x, y, &destEnd, &mouseLeftUpPos_start, &mouseLeftUpPos_end);
+		raycast(x, y, &Mouse::destEnd, &Mouse::mouseLeftUpPos_start, &Mouse::mouseLeftUpPos_end);
 		if (!glutGetModifiers() == 1)//dodawanie do zaznaczenia...
 		{
 			player->clearSelectedUnits();
@@ -1269,36 +1030,36 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 		{
 			vec3 pos = unit->getPosition();
 
-			vec3 vertexA = { destStart.x,1.0f,destStart.z };
-			vec3 vertexB = { destEnd.x,1.0f,destStart.z };
-			vec3 vertexC = { destEnd.x,1.0f,destEnd.z };
+			vec3 vertexA = {Mouse::destStart.x,0.0f,Mouse::destStart.z };
+			vec3 vertexB = {Mouse::destEnd.x,0.0f,Mouse::destStart.z };
+			vec3 vertexC = {Mouse::destEnd.x,0.0f,Mouse::destEnd.z };
 
 			if((pos.x>=vertexA.x && pos.x <=vertexB.x) && (pos.z >= vertexB.z && pos.z <= vertexC.z))
 			{
 				player->addToSelectedUnits(unit);
 			}
 
-			vec3 vertexAI = { destStart.x,1.0f,destStart.z };
-			vec3 vertexBI = { destStart.x,1.0f,destEnd.z };
-			vec3 vertexCI = { destEnd.x,1.0f,destEnd.z };
+			vec3 vertexAI = {Mouse::destStart.x,0.0f,Mouse::destStart.z };
+			vec3 vertexBI = {Mouse::destStart.x,0.0f,Mouse::destEnd.z };
+			vec3 vertexCI = {Mouse::destEnd.x,0.0f,Mouse::destEnd.z };
 
 			if ((pos.x <= vertexAI.x && pos.x >= vertexCI.x) && (pos.z >= vertexAI.z && pos.z <= vertexBI.z))
 			{
 				player->addToSelectedUnits(unit);
 			}
 
-			vec3 vertexAII = { destStart.x,1.0f,destStart.z };
-			vec3 vertexBII = { destEnd.x,1.0f,destEnd.z };
-			vec3 vertexCII = { destEnd.x,1.0f,destStart.z };
+			vec3 vertexAII = {Mouse::destStart.x,0.0f,Mouse::destStart.z };
+			vec3 vertexBII = {Mouse::destEnd.x,0.0f,Mouse::destEnd.z };
+			vec3 vertexCII = {Mouse::destEnd.x,0.0f,Mouse::destStart.z };
 
 			if ((pos.x<= vertexBII.x && pos.x>=vertexAII.x) && (pos.z<= vertexCII.z && pos.z>= vertexBII.z))
 			{
 				player->addToSelectedUnits(unit);
 			}
 
-			vec3 vertexAIII = { destStart.x,1.0f,destStart.z };
-			vec3 vertexBIII = { destEnd.x,1.0f,destEnd.z };
-			vec3 vertexCIII = { destStart.x,1.0f,destEnd.z };
+			vec3 vertexAIII = {Mouse::destStart.x,0.0f,Mouse::destStart.z };
+			vec3 vertexBIII = {Mouse::destEnd.x,0.0f,Mouse::destEnd.z };
+			vec3 vertexCIII = {Mouse::destStart.x,0.0f,Mouse::destEnd.z };
 
 			if ((pos.x<= vertexCIII.x&& pos.x >= vertexBIII.x) && (pos.z <= vertexAIII.z && pos.z >= vertexCIII.z))
 			{
@@ -1371,18 +1132,18 @@ void mouseWheel(int button, int dir, int x, int y)
 
 	if (dir > 0)
 	{
-		if (playerCamera.pos.y >= playerCamera.minHeight) {
-			playerCamera.pos.x += playerCamera.dir.x * playerCamera.speed * 5;
-			playerCamera.pos.y += playerCamera.dir.y * playerCamera.speed * 5;
-			playerCamera.pos.z += playerCamera.dir.z * playerCamera.speed * 5;
+		if (Game::playerCamera.pos.y >= Game::playerCamera.minHeight) {
+			Game::playerCamera.pos.x += Game::playerCamera.dir.x * Game::playerCamera.speed * 5;
+			Game::playerCamera.pos.y += Game::playerCamera.dir.y * Game::playerCamera.speed * 5;
+			Game::playerCamera.pos.z += Game::playerCamera.dir.z * Game::playerCamera.speed * 5;
 		}
 	}
 	else
 	{
-		if (playerCamera.pos.y <= playerCamera.maxHeight){
-			playerCamera.pos.x -= playerCamera.dir.x * playerCamera.speed * 5;
-			playerCamera.pos.y -= playerCamera.dir.y * playerCamera.speed * 5;
-			playerCamera.pos.z -= playerCamera.dir.z * playerCamera.speed * 5;
+		if (Game::playerCamera.pos.y <= Game::playerCamera.maxHeight){
+			Game::playerCamera.pos.x -= Game::playerCamera.dir.x * Game::playerCamera.speed * 5;
+			Game::playerCamera.pos.y -= Game::playerCamera.dir.y * Game::playerCamera.speed * 5;
+			Game::playerCamera.pos.z -= Game::playerCamera.dir.z * Game::playerCamera.speed * 5;
 		}
 	}
 	
@@ -1390,6 +1151,8 @@ void mouseWheel(int button, int dir, int x, int y)
 }
 
 void OnRender() {
+	soundPlayer->update3DPos(Game::playerCamera.pos,Game::playerCamera.dir,{0.0f,0.0f,0.0f},{0.0f,1.0f,0.0f});
+	//TODOgdzie to ustawic?
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3d(0.902, 0.902, 0.980);
 	glMatrixMode(GL_MODELVIEW);
@@ -1410,15 +1173,20 @@ void OnRender() {
 	time << hours << "H:" << mins << "M:"<<secs<<"S";
 
 	const int font = (int)GLUT_BITMAP_9_BY_15;
+
+	//GLUT_WINDOW_HEIGHT 
+	//GLUT_WINDOW_WIDTH
 	
-	renderBitmapString(1600, 30, (void *)font,player->getResources());
-	renderBitmapString(1700, 30, (void *)font, player->getEnergy());
-	renderBitmapString(1800, 30, (void *)font, player->getSupplyToPrint().c_str());
-	renderBitmapString(1600, 60, (void *)font, "weapon upgrades");
-	renderBitmapString(1750, 60, (void *)font, player->getWeaponUpgrades());
-	renderBitmapString(1600, 90, (void *)font, "armor upgrades");
-	renderBitmapString(1750, 90, (void *)font, player->getArmorUpgrades());
-	renderBitmapString(200, 800, (void *)font, time.str().c_str());
+
+	renderBitmapString(w- 320, 30, (void *)font,player->getResources());
+	renderBitmapString(w - 220, 30, (void *)font, player->getEnergy());
+	renderBitmapString(w - 110, 30, (void *)font, player->getSupplyToPrint().c_str());
+	//renderBitmapString(w - 110, 60, (void *)font, player->getMyBuildings().size());		//TODO ogarnac
+	renderBitmapString(w - 320, 60, (void *)font, "weapon upgrades");
+	renderBitmapString(w - 170, 60, (void *)font, player->getWeaponUpgrades());
+	renderBitmapString(w - 320, 90, (void *)font, "armor upgrades");
+	renderBitmapString(w - 170, 90, (void *)font, player->getArmorUpgrades());
+	renderBitmapString(200, h-280, (void *)font, time.str().c_str());
 
 	stringstream s;
 //	uto player->getSelectedUnits();
@@ -1452,61 +1220,32 @@ void OnRender() {
 	
 
 	gluLookAt(
-		playerCamera.pos.x, playerCamera.pos.y, playerCamera.pos.z, // Pozycja kamery
-		playerCamera.pos.x + playerCamera.dir.x, playerCamera.pos.y + playerCamera.dir.y, playerCamera.pos.z + playerCamera.dir.z, // Punkt na ktory patrzy kamera (pozycja + kierunek)
+		Game::playerCamera.pos.x, Game::playerCamera.pos.y, Game::playerCamera.pos.z, // Pozycja kamery
+		Game::playerCamera.pos.x + Game::playerCamera.dir.x, Game::playerCamera.pos.y + Game::playerCamera.dir.y, Game::playerCamera.pos.z + Game::playerCamera.dir.z, // Punkt na ktory patrzy kamera (pozycja + kierunek)
 		0.0f, 1.0f, 0.0f // Wektor wyznaczajacy pion
 	);
-	
-	for (auto unit : player->getMyUnits())
+
+	game->drawTerrain();
+	for (auto min : game->getEntities())
 	{
-		if(!unit->getIsDead()){
-			vec3 temp = unit->getPosition();
-			if(unit->getName()=="Test")		//TODO przerobic
-				glColor3f(0.0f, 1.0f, 0.0f);
-			else
-				if(unit->getTarget()==NULL)
-					glColor3f(0.0f, 0.0f, 1.0f);
-				else
-					glColor3f(1.0f, 0.0f, 0.0f);
+		if(!min->getIsDead())
+		{
+			vec3 temp = min->getPosition();
 			glPushMatrix();
 			glTranslatef(temp.x, temp.y, temp.z);
-			//-2.0f
-			//-5.0f
-			if(unit->getTarget()!=NULL)
-			{
-				float angle = atan2(unit->getTarget()->getPosition().x - unit->getPosition().x, unit->getTarget()->getPosition().z - unit->getPosition().z);
-				angle = angle*(180 / 3.14);
-				glPushMatrix();
-				glRotatef(angle, 0.0f, 1.0f, 0.0f);
-				glCallList(mechv1gora);
-				glCallList(mechv1gatlingi);
-					glPushMatrix();
-					glTranslatef(1.5f, 2.2f, 1.7f);
-					glutSolidSphere(rand() % 3, 10, 10);
-					glTranslatef(-3.0f, 0.0f, 0.0f);
-					glutSolidSphere(rand() % 3, 10, 10);
-					glPopMatrix();
-				glPopMatrix();
-				//glCallList(tankT2Wieza);
-				//glCallList(tankT2Dzialko);
-				glCallList(mechv1nogi);
-				//glCallList(tankT2);
-			}
-			else
-			{
-				unit->calculateVecAngle(); 
-				glRotatef(unit->angle, 0.0f, 1.0f, 0.0f); 
-				glCallList(mechv1nogi);
-				glCallList(mechv1gatlingi); 
-				glCallList(mechv1gora);
-				//glCallList(tankT2);
-				//glCallList(tankT2Wieza);
-				//glCallList(tankT2Dzialko);
-			}
-			
-			//glutWireCube(1.0f);
+			glColor3f(0, 0, 1);
+			glutSolidCube(1);
 			glPopMatrix();
 		}
+		
+	}
+
+	for (auto unit : player->getMyUnits())
+	{
+		
+		if (!unit->getIsDead())
+			unit->drawSelf();
+		
 	}
 
 	for (auto building : player->getMyBuildings())
@@ -1581,34 +1320,36 @@ void repairCommand(int a)
 */
 void unitDetails(int)
 {
-/*	/*
 
-	cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
+
+/*	cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
 	
-	#1#
 	int i = 0;
 	for(auto unit : player->getMyUnits())
 	{
-
-
-		/*cout << "unit[" << i << "] position " << unit->getPosition() ;
+		cout << "unit[" << i << "] position " << unit->getPosition() ;
 		cout << "unit[" << i << "] destination " << unit->getDestination() << endl;
-		cout << "unit[" << i << "] dir " << unit->dir << endl;#1#
+		cout << "unit[" << i << "] dir " << unit->dir << endl;
+		cout << "unit[" << i << "] target " << unit->getTarget() << endl;
+		cout << "unit[" << i << "] minerals " << unit->getHasMinerals() << endl;
 		i++;
 	}
+	
 	i = 0;
-	/*
-	int i = 0;
 	for (auto buidling : player->getMyBuildings())
 	{
-
 		cout << "building[" << i << "] position " << buidling->getPosition() ;
 		cout << "building[" << i << "] hitpoints " << buidling->getHitPoints() << endl;
 		cout << "building[" << i << "] hitpoints " << buidling->getPosition() << endl;
 		i++;
 	}
-	#1#*/
-	glutTimerFunc(3000, unitDetails, 0);
+
+	cout << player->getResources() << endl;
+	cout << player->getEnergy() << endl;
+	
+	cout << player->getMyUnits().size();
+
+	glutTimerFunc(3000, unitDetails, 0);*/
 	
 }
 
@@ -1617,6 +1358,10 @@ void actionTimer(int a)
 	for (auto unit : player->getMyUnits())
 	{
 		unit->updateCooldown(1);
+	}
+	for(auto building : player->getMyBuildings())
+	{
+		building->updateCooldown(1);
 	}
 	glutTimerFunc(20, actionTimer, 0);
 }
@@ -1629,6 +1374,10 @@ void posManager(int a)
 		vec3 pos=unit->getPosition();
 		int x = floor(pos.x);
 		int z = floor(pos.z);
+		if(x>0 && z>0)
+		{
+			
+		
 		player->grid->testColision(unit, unit->getCurrentXPos(), unit->getCurrentZPos());
 //		if(!player->grid->testColision(unit, x, z))
 //		{
@@ -1659,7 +1408,7 @@ void posManager(int a)
 			player->grid->occupy(unit, x, z);
 			unit->setCurrentGridPos(x, z);
 		}
-		/*if (unit->getTarget() == NULL && !unit->getIsMoving()){	//TODO atak wstrzymany...
+		if (unit->getTarget() == NULL && !unit->getIsMoving()){	//TODO atak wstrzymany...
 			shared_ptr<Targetable>target = player->grid->searchTargets(x, z, unit->getRange());
 			if(target!=NULL)
 			{
@@ -1672,16 +1421,66 @@ void posManager(int a)
 			{
 				unit->setTarget(NULL);
 			}
-		}*/
+		}/**/
 		
+		}
 	}
-	
 	glutTimerFunc(20, posManager, 0);
 }
 
 void attackManager(int a)
 {
-	player->cleanDeadEntities();
+	player->cleanMyDeadEntities();
+	game->cleanGlobalDeadEntities();
+	
 
 	glutTimerFunc(20, attackManager, 0);
+}
+
+void renderBitmapString(float x, float y, void *font, int num) {
+	glDisable(GL_LIGHTING);
+	const char *c;
+	glRasterPos2f(x, y);
+	string str = to_string(num);
+	const char* cstr = str.c_str();
+	for (c = cstr; *c != '\0'; c++) {
+		glutBitmapCharacter(font, *c);
+	}
+	glEnable(GL_LIGHTING);
+}
+
+void renderBitmapString(float x, float y, void *font, const char *string) {
+	glDisable(GL_LIGHTING);
+	const char *c;
+	glRasterPos2f(x, y);
+	for (c = string; *c != '\0'; c++) {
+		glutBitmapCharacter(font, *c);
+	}
+	glEnable(GL_LIGHTING);
+}
+
+void drawHealth(float health) {
+	glBegin(GL_QUADS);
+	glColor3f(1, 0, 0);
+	glVertex2f(0, 0);
+	glVertex2f(1, 0);
+	glVertex2f(1, health);
+	glVertex2f(0, health);
+	glEnd();
+}
+
+void setOrthographicProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, w, 0, h);
+	glScalef(1, -1, 1);
+	glTranslatef(0, -h, 0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void resetPerspectiveProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 }

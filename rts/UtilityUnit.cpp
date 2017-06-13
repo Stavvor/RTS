@@ -14,10 +14,25 @@ UtilityUnit::UtilityUnit( string Sname, string Stype, vec3 Vpos, unsigned int Ic
 }
 
 
-void UtilityUnit::mine() {
+void UtilityUnit::mine(shared_ptr<Targetable>) {
 	//TODO wykminic jak ma dzialac mining
 }
 
+void UtilityUnit::repair(shared_ptr<Targetable>) {
+	
+}
+
+void UtilityUnit::doAction()
+{
+	
+	this -> mine(this->getTarget());
+	this->returnMinerals();
+}
+
 UtilityUnit::~UtilityUnit()
+{
+}
+
+void UtilityUnit::drawSelf()
 {
 }

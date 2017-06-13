@@ -8,5 +8,7 @@ public:
 	Airport(vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades);
 	//void train();
 	~Airport();
+
+	void drawSelf() override;
 };
 

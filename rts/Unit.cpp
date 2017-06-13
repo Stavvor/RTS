@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Unit.h"
+
+extern SoundPlayer* soundPlayer; //TODO moze bardziej elegancko??
+
 void Unit::updateUnitPos(vec3 newPos)
 {
 	setPosition(newPos);
@@ -40,6 +43,7 @@ Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ICooldown, float 
 	cooldown = 0;
 	dir = { 0,0,0 };
 	isMoving = false;
+	snd = NULL;
 }
 
 Unit::Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigned int IhitPoints, float Fspeed, float Frange, unsigned int* armorUpgrades)
@@ -56,6 +60,7 @@ Unit::Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigne
 	destination = { 0,0,0 };
 	cooldown = 0;
 	isMoving = false;
+	snd = NULL;
 }
 
 //Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ImaxCooldown, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
@@ -80,9 +85,29 @@ unsigned Unit::getCooldown()
 
 void Unit::updateCooldown(unsigned int value)
 {
+	char const* name = "Test";
+	//cout<<typeid(*this).name() << endl;
+	if(1)
+	{
+		if(this->getHasMinerals())
+		{
+			this->returnMinerals();
+		}
+		if(!this->getHasMinerals() && this->getTarget()!=NULL)
+		{
+			this->goToMiningLocation();
+		}
+	}
 	cooldown += value;
-	if (cooldown >= maxCooldown && this->getTarget() != NULL && targetInRange()) {
+	if (cooldown >= maxCooldown && this->getTarget() != NULL ) {
 		this->doAction();
+		//
+			soundPlayer->play3DSound(soundPlayer->gatling,this->getPosition(),10.0f,snd);//TODO dodac skladowa jednostki zasieg halasu..
+			if (snd)
+			{
+				irrklang::vec3df pos = { this->getPosition().x,this->getPosition().y,this->getPosition().z }; //TODO updatowanie pozycji mozna przenisc do onrender... albo menegera pozycji zeby bylo bardzie smooth
+				snd->setPosition(pos);
+			}
 		cooldown = 0;
 	}
 	else if (cooldown >= 2 * maxCooldown)
@@ -164,6 +189,10 @@ bool Unit::targetInRange()
 	else return false;
 }
 
+void Unit::goToMiningLocation()
+{
+}
+
 void Unit::moveCommand()
 {
 	if(getTarget()!=NULL)
@@ -179,6 +208,10 @@ void Unit::setHasMinerals(bool)
  bool Unit::getHasMinerals()
 {
 	 return true;
+}
+
+void Unit::returnMinerals()
+{
 }
 
 Unit::~Unit()
@@ -205,4 +238,8 @@ void Unit::calculateVecAngle()
 	}
 	
 	
+}
+
+void Unit::drawSelf()
+{
 }

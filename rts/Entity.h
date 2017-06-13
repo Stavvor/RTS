@@ -5,7 +5,6 @@ class Entity
 {
 private:
 	vec3 pos;
-	
 public:
 	Entity();
 	Entity(vec3 Vpos);
@@ -14,6 +13,7 @@ public:
 
 	//virtual
 	virtual bool getIsDead() = 0;
+	virtual void drawSelf() = 0;
 	//functions
 
 	vec3 getPosition();

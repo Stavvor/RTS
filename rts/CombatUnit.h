@@ -9,10 +9,13 @@ private:
 public:
 	CombatUnit();
 	CombatUnit(string SType, unsigned int Idamage, unsigned int IAttackCooldown, float, float, string Sname, vec3 Vpos, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades);
+	virtual ~CombatUnit();
 	void doAction();
 	void scan();
 	void attack(shared_ptr<Targetable>  target);
 	//virtual void updateKillCount(); //TODO czy potrzeba funkcji? :|
-	virtual ~CombatUnit();
+	
+
+	virtual void drawSelf() override;
 };
 
