@@ -7,9 +7,9 @@ CombatUnit::CombatUnit()
 }
 
 CombatUnit::CombatUnit(string Stype, unsigned int Idamage, unsigned int ICooldown, float Frange, float FscanRange,string Sname, vec3 Vpos, unsigned int IhitPoints, float Fspeed, 
-	unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
+	unsigned int* weaponUpgrades, unsigned int* armorUpgrades,bool value)
 	:
-	Unit(Stype,Sname, Vpos, ICooldown,Frange, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades),
+	Unit(Stype,Sname, Vpos, ICooldown,Frange, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades, value),
 	damage (Idamage),
 	scanRange (FscanRange)
 {
@@ -35,7 +35,7 @@ void CombatUnit::attack(shared_ptr<Targetable>  target)
 		}
 	}
 	else {
-		cout << "za daleko" << endl;
+		cout << "target too far" << endl;
 	}
 	
 }

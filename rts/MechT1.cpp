@@ -10,9 +10,9 @@ MechT1::MechT1()
 }
 
 MechT1::MechT1(string Stype, unsigned int Idamage, unsigned int IattackCooldown, float Frange, float FscanRange, string Sname, vec3 Vpos,
-	unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
+	unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades, bool value)
 	:
-	CombatUnit(Stype, Idamage, IattackCooldown, Frange, FscanRange, Sname, Vpos, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades)
+	CombatUnit(Stype, Idamage, IattackCooldown, Frange, FscanRange, Sname, Vpos, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades,value)
 {
 }
 
@@ -25,7 +25,7 @@ void MechT1::drawSelf()
 {
 	vec3 temp = this->getPosition();
 	glPushMatrix();
-	glTranslatef(temp.x, temp.y, temp.z);
+	glTranslatef(temp.x, temp.y + 0.5, temp.z);
 	//-2.0f
 	//-5.0f
 	if (this->getTarget() != NULL)
@@ -55,6 +55,16 @@ void MechT1::drawSelf()
 		glCallList(Resources::mechLegsT2);
 		glCallList(Resources::mechGatlingT2);
 		glCallList(Resources::mechHeadT2);
+
+
+		//float rotateAngle = glutGet(GLUT_ELAPSED_TIME)/100;
+		//float rotate = sin(0.1*rotateAngle);
+		//glPushMatrix();
+		//glRotatef(rotate, 0.0f, 1.0f, 0.0f);
+		//glCallList(Resources::mechGatlingT2);
+		//glCallList(Resources::mechHeadT2);
+		//glPopMatrix();
+		//glCallList(Resources::mechLegsT2);
 		//glCallList(tankT2);
 		//glCallList(tankT2Wieza);
 		//glCallList(tankT2Dzialko);
@@ -62,4 +72,17 @@ void MechT1::drawSelf()
 
 	//glutWireCube(1.0f);
 	glPopMatrix();
+
+}
+
+GLuint MechT1::chooseIcon()
+{
+	auto hp = this->getNormalizedHitPoints();
+	if (hp >= 0.666)
+		return Resources::mechT2IconG;
+	if (hp > 0.333 && hp < 0.666)
+		return Resources::mechT2IconY;
+	if (hp <= 0.333)
+		return Resources::mechT2IconR;
+	return 0;
 }

@@ -3,13 +3,14 @@
 
 Worker::Worker()
 {
+	mineralFields = game->entities;
 }
 
 Worker::Worker(string Sname, string Stype, vec3 Vpos, unsigned int Icooldown, unsigned int IHitPoints, float FSpeed, float FRange, float FScanRange, unsigned int* armorUpgrades)
 	:
 	UtilityUnit(Sname, Stype, Vpos, Icooldown, IHitPoints, FSpeed, FRange, FScanRange, armorUpgrades)
 {
-	headquarters = { 5.0f,0.0f,10.0f };
+	headquarters = { 65.0f,0.0f,60.0f };
 	currentMineralField = { 0.0f,0.0f,0.0f };
 	hasMinerals = false;
 	maxCooldown = 200;//TODO adjust
@@ -65,27 +66,14 @@ void Worker::mine(shared_ptr<Targetable> target)
 
 void Worker::repair(shared_ptr<Targetable> target)
 {
-	if (typeid(target) != typeid(Building*) || (typeid(target) != typeid(Unit*) && target->getType() == "Mechanical")) {
-		cout << "to nie jest budynek" << endl;
-		return;
-	}
-	//ruch
-	if(target->maxHitPoints-target->getHitPoints()<=repairRate){
-		target->setHitPoints(target->maxHitPoints);
-		//setTarget(NULL);
-	}
-	else 
-	{
-		target->setHitPoints(target->getHitPoints()+repairRate);
-	}
-	//return;
+
 }
 
 void Worker::drawSelf()
 {
 	vec3 temp = this->getPosition();
 	glPushMatrix();
-	glTranslatef(temp.x, temp.y, temp.z);
+	glTranslatef(temp.x, temp.y + 0.5f, temp.z);
 	//-2.0f
 	//-5.0f
 	if (this->getTarget() != NULL)
@@ -96,12 +84,7 @@ void Worker::drawSelf()
 		glRotatef(angle, 0.0f, 1.0f, 0.0f);
 		glCallList(Resources::mechHeadT2);
 		glCallList(Resources::mechGatlingT2);
-		glPushMatrix();
-		glTranslatef(1.5f, 2.2f, 1.7f);
-		glutSolidSphere(rand() % 3, 10, 10);
-		glTranslatef(-3.0f, 0.0f, 0.0f);
-		glutSolidSphere(rand() % 3, 10, 10);
-		glPopMatrix();
+		
 		glPopMatrix();
 		//glCallList(tankT2Wieza);
 		//glCallList(tankT2Dzialko);
@@ -169,7 +152,7 @@ void Worker::goToMiningLocation()
 	else
 	{
 		this->updateMiningCooldown(1);
-		if (miningCooldown >= maxCooldown+rand()%20 && this->getTarget() != NULL) {
+		if (miningCooldown >= maxCooldown+rand()%150 && this->getTarget() != NULL) {
 			this->mine(this->getTarget());
 
 			this->setMiningCooldown(0);
@@ -186,4 +169,24 @@ bool Worker::getHasMinerals()
 void Worker::setHasMinerals(bool v)
 {
 	hasMinerals = v;
+}
+
+GLuint Worker::chooseIcon()
+{
+	auto hp = this->getNormalizedHitPoints();
+	if (hp >= 0.666)
+		; //TODO Update
+		  //return Resources::BomberT1IconG;
+	if (hp < 0.333 && hp < 0.666)
+		;
+	//return Resources::BomberT1IconY;
+	if (hp <= 0.333)
+		;
+	//return Resources::BomberT1IconR;
+	return 0;
+}
+
+void Worker::miningOrder()
+{
+	
 }

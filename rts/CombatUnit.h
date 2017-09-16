@@ -8,7 +8,7 @@ private:
 	
 public:
 	CombatUnit();
-	CombatUnit(string SType, unsigned int Idamage, unsigned int IAttackCooldown, float, float, string Sname, vec3 Vpos, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades);
+	CombatUnit(string SType, unsigned int Idamage, unsigned int IAttackCooldown, float, float, string Sname, vec3 Vpos, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades,bool enemy);
 	virtual ~CombatUnit();
 	void doAction();
 	void scan();

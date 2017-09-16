@@ -16,7 +16,7 @@ public:
 	void loadAllSounds();
 	void playMusicirrklang(irrklang::ISoundSource* music, bool value);
 	void playSound(irrklang::ISoundSource* sound);
-	void play3DSound(irrklang::ISoundSource* sound, vec3 pos, float soundRange, irrklang::ISound* snd);
+	irrklang::ISound* play3DSound(irrklang::ISoundSource* sound, vec3 pos, float soundRange, irrklang::ISound* snd);
 	irrklang::ISoundEngine* engine;
 
 };

@@ -1,5 +1,5 @@
 #pragma once
-#define GRIDSIZE 1000
+#define GRIDSIZE 1024
 
 class Grid
 {

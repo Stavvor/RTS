@@ -12,12 +12,13 @@ private:
 	int currentXpos;
 	int currentZpos;
 	bool isMoving;
+	
 	//
 	
 public:
 	//Targetable* target;		//TODO roziwazac cel...
 	Unit();
-	Unit(string name, string Stype, vec3 position, unsigned int ICooldoown, float range, unsigned int hitPoints, float speed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades); //CombatUnit constructor
+	Unit(string name, string Stype, vec3 position, unsigned int ICooldoown, float range, unsigned int hitPoints, float speed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades,bool enemy); //CombatUnit constructor
 	Unit(string name, string Stype,  vec3 position, unsigned int ICooldoown,  unsigned int hitPoints, float speed, float range, unsigned int* armorUpgrades);	//UtilityUnit constructor
 	//Unit(string Sname, string Stype, vec3 Vpos, unsigned int IAttackCooldown, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades);
 	irrklang::ISound* snd;
@@ -27,7 +28,7 @@ public:
 	float currAngle;
 	unsigned int maxCooldown;
 	unsigned int getCooldown();
-
+	float getSpeed();
 	void updateCooldown(unsigned int value);
 	void setCooldown(unsigned int value);
 	vec3 getUnitPos();
@@ -38,6 +39,7 @@ public:
 	void setIsPickedUp(bool value);
 	bool getIsPickedUp();
 	bool targetInRange();//TODO virtual??
+	virtual void miningOrder();
 	virtual void goToMiningLocation();
 	virtual void attack(Targetable* target);
 	virtual void mine(MineralField* target);
@@ -47,6 +49,8 @@ public:
 	virtual bool getHasMinerals();
 	virtual void returnMinerals();
 	virtual void drawSelf() override;
+	virtual GLuint chooseIcon() = 0;
+
 	virtual ~Unit(); 
 	//void updateMovePoints(unsigned int value);
 	//unsigned int getMovePoints();

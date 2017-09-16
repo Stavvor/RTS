@@ -88,17 +88,18 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include;$(SolutionDir)corona\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib;$(SolutionDir)corona\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)";
-copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
+copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)corona\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -108,16 +109,17 @@ copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include;$(SolutionDir)corona\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib;$(SolutionDir)corona\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)";
-copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
+copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)corona\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -129,17 +131,19 @@ copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include;$(SolutionDir)corona\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib;$(SolutionDir)corona\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"</Command>
+      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)corona\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,15 +155,19 @@ copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)freeglut\include;$(SolutionDir)irrKlang\include;$(SolutionDir)corona\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)freeglut\lib;$(SolutionDir)irrKlang\lib;$(SolutionDir)corona\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)"</Command>
+      <Command>copy "$(SolutionDir)freeglut\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)";
+copy "$(SolutionDir)corona\bin\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -167,10 +175,14 @@ copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Airport.h" />
+    <ClInclude Include="Bitmap.h" />
     <ClInclude Include="Headquarters.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="rts.h" />
     <ClInclude Include="SoundPlayer.h" />
+    <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Transporter.h" />
     <ClInclude Include="Factory.h" />
     <ClInclude Include="BomberT1.h" />
@@ -206,9 +218,13 @@ copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Airport.cpp" />
+    <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="Headquarters.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SoundPlayer.cpp" />
+    <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transporter.cpp" />
     <ClCompile Include="Factory.cpp" />
     <ClCompile Include="BomberT1.cpp" />
@@ -241,6 +257,9 @@ copy "$(SolutionDir)irrKlang\bin\*.dll" "$(TargetDir)"</Command>
     <ClCompile Include="Unit.cpp" />
     <ClCompile Include="UtilityUnit.cpp" />
     <ClCompile Include="Worker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

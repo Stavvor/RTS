@@ -6,9 +6,9 @@ TankT2::TankT2()
 }
 
 TankT2::TankT2(string Stype, unsigned int Idamage, unsigned int IattackCooldown, float Frange, float FscanRange, string Sname, vec3 Vpos,
-	unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
+	unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades, bool value)
 	:
-	CombatUnit(Stype, Idamage, IattackCooldown, Frange, FscanRange, Sname, Vpos, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades)
+	CombatUnit(Stype, Idamage, IattackCooldown, Frange, FscanRange, Sname, Vpos, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades,value)
 {
 }
 
@@ -20,7 +20,8 @@ void TankT2::drawSelf()
 {
 	vec3 temp = this->getPosition();
 	glPushMatrix();
-	glTranslatef(temp.x, temp.y, temp.z);
+	glTranslatef(temp.x, temp.y+0.5, temp.z);
+	glDisable(GL_CULL_FACE);
 	//-2.0f
 	//-5.0f
 	if (this->getTarget() != NULL)
@@ -31,12 +32,6 @@ void TankT2::drawSelf()
 		glRotatef(angle, 0.0f, 1.0f, 0.0f);
 		glCallList(Resources::tankTowerT2);
 		glCallList(Resources::tankCannonT2);
-		glPushMatrix();
-		glTranslatef(1.5f, 2.2f, 1.7f);
-		glutSolidSphere(rand() % 3, 10, 10);
-		glTranslatef(-3.0f, 0.0f, 0.0f);
-		glutSolidSphere(rand() % 3, 10, 10);
-		glPopMatrix();
 		glPopMatrix();
 		
 		glCallList(Resources::tankT2);
@@ -51,5 +46,19 @@ void TankT2::drawSelf()
 	}
 
 	//glutWireCube(1.0f);
+	glEnable(GL_CULL_FACE);
 	glPopMatrix();
+}
+
+GLuint TankT2::chooseIcon()
+{
+	auto hp = this->getNormalizedHitPoints();
+
+	if (hp >= 0.666)
+		 return Resources::tankT2IconG;
+	if (hp > 0.333 && hp < 0.666)
+		return Resources::tankT2IconY;
+	if (hp <= 0.333)
+		return Resources::tankT2IconR;
+	return 0;
 }

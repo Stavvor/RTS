@@ -16,6 +16,7 @@ private:
 	vector<shared_ptr<Building>>myBuildings;
 	//vector <Unit*> myUnits;
 	vector<shared_ptr<Unit>>myUnits;
+	vector<shared_ptr<Unit>>myWorkers;
 	//vec3 mousePos;
 
 	vector <shared_ptr<Unit>>selectedUnits;
@@ -38,19 +39,33 @@ public:
 	}
 
 	template<typename T>
-	void Player::trainUnit(shared_ptr<Building> target,unsigned int buildTime) {
+	void Player::trainUnit(shared_ptr<Building> target,unsigned int buildTime, string SType, unsigned int Idamage, unsigned int IAttackCooldown,
+		float Frange, float FScanRange, string Sname, unsigned int IhitPoints, float Fspeed,bool value) {
+
 		//TODO how to choose building... static? control groups?
-		target->train<T>(&weaponUpgrades, &armorUpgrades, buildTime);
+		target->train<T>(&weaponUpgrades, &armorUpgrades, buildTime,SType, Idamage,IAttackCooldown,Frange, FScanRange,Sname, IhitPoints,Fspeed,value);
+		
 	}
+
+	template<typename T>
+	void Player::trainUtilityUnit(shared_ptr<Building> target, unsigned int buildTime, string Sname, string Stype,
+		unsigned int Icooldown, unsigned int IHitPoints, float speed, float range, float scanRange) {
+		//TODO how to choose building... static? control groups?
+		target->trainUtility<T>(&armorUpgrades, buildTime,Sname,Stype,Icooldown,IHitPoints,speed,range,scanRange);
+	}
+
+	
 
 	Grid* grid;
 	struct Details* details; 
 
 
 	unsigned int getResources();
+	void setResources(unsigned value);
 	void updateResources(unsigned int);
 	unsigned int getEnergy();
-	void updateEnergy(unsigned int);
+	void setEnergy(unsigned int);
+	void updateEnergy(unsigned value);
 	unsigned int getWeaponUpgrades();
 	unsigned int getArmorUpgrades();
 	unsigned int* getWeaponUpgradesPtr();
@@ -74,9 +89,10 @@ public:
 	void buildStructure(vec3 pos);
 //	void trainUnit(shared_ptr<Building> target);
 	void createWorker();
-	
+	void toggleFriendlyFire();
 	void addNewUnit(Unit*);
 
+	vector<shared_ptr<Unit>> getMyWorkers();
 	vector<shared_ptr<Unit>> getMyUnits();
 	vector<shared_ptr<Building>> getMyBuildings();
 	vector<shared_ptr<Unit>> getSelectedUnits();
@@ -90,7 +106,7 @@ public:
 
 	void cleanMyDeadEntities();
 	void clearMemory();
-
+	
 	
 	void buildGenerator(const vec3& pos);
 };

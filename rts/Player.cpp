@@ -6,8 +6,8 @@ Player::Player(string Sname)
 	:
 	name (Sname)
 {
-	resources = 400;
-	energy = 100;
+	resources = 2000;
+	energy = 1000;
 	supply = 0;
 	weaponUpgrades = 0;
 	armorUpgrades = 0;
@@ -17,6 +17,11 @@ Player::Player(string Sname)
 unsigned int Player::getResources()
 {
 	return resources;
+}
+
+void Player::setResources(unsigned int value)
+{
+	resources = value;
 }
 
 void Player::updateResources(unsigned int value)
@@ -29,10 +34,16 @@ unsigned int Player::getEnergy()
 	return energy;
 }
 
+void Player::setEnergy(unsigned int value)
+{
+	energy = value;
+}
+
 void Player::updateEnergy(unsigned int value)
 {
 	energy += value;
 }
+
 unsigned int Player::getWeaponUpgrades()
 {
 	return weaponUpgrades;
@@ -127,15 +138,41 @@ void Player::createWorker()
 	//other buildings...
 	//myUnits.push_back(new Worker("Test", "Mechanical", { 0,0,0 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
 
-	myUnits.emplace_back(new Worker("Test", "Mechanical", { 0,0,0 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
+	myWorkers.emplace_back(new Worker("Test", "Mechanical", { 63,0,58 },25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades)); //TODO nazwa temp do testu miningu zmienic
 	//Unit* temp= new Worker("Test", "Mechanical", { 0,0,0 }, 25, 50, 0.0f, 0.0f, 0.0f, &armorUpgrades);
 	supply++;//TODO set limit? 
+}
+
+void Player::toggleFriendlyFire()
+{
+	if (getMyUnits().size() == 0)
+		return;
+	else
+	{
+		if(getMyUnits()[0]->isEnemy())
+			for(auto unit :getMyUnits())
+			{
+				unit->setEnemy(false);
+			}
+		else
+		{
+			for (auto unit : getMyUnits())
+			{
+				unit->setEnemy(true);
+			}
+		}
+	}
 }
 
 void Player::addNewUnit(Unit*temp)
 {
 	myUnits.emplace_back(temp);
 	supply++;//TODO set limit...
+}
+
+vector<shared_ptr<Unit>> Player::getMyWorkers()
+{
+	return myWorkers;
 }
 
 vector<shared_ptr<Unit>> Player::getMyUnits()

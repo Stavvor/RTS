@@ -11,6 +11,7 @@ private:
 	vec3 headquarters;
 	bool hasMinerals;
 	unsigned int carrying;
+	vector <shared_ptr<Targetable>>mineralFields;
 	//MineralField* myMineral;
 	//Targetable* myTarget;
 public:
@@ -26,6 +27,8 @@ public:
 	void goToMiningLocation() override;
 	bool getHasMinerals() override;
 	void setHasMinerals(bool) override;
+	void miningOrder() override;
+	GLuint chooseIcon();
 
 
 	//TODO jak rozwiazac budowanie

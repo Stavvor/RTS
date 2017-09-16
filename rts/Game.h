@@ -5,71 +5,73 @@ class Game
 {
 private:
 	Grid *grid;
-	vector <shared_ptr<Targetable>>entities;
+	
 	vector<vec3>mineralLayout;
-	SoundPlayer* soundPlayer;
+	vector<vec3>enemiesLayout;
+	
+	GLuint terrain;
+	Terrain*terrainPtr;
+	Resources* resources;
+	bool menu, standard, defense;
+
+	
+	unsigned int weaponUpgrades;
+	unsigned int armorUpgrades;
+
+	bool finished;
+
 public:
 	Game();
 	~Game();
+	
+	bool quit;
+	void initialization();
 	void cleanGlobalDeadEntities();
+	void drawCube(GLuint AllTexture);
+	vector<shared_ptr<Unit>>enemies;
+	vector <shared_ptr<Targetable>>entities;
+	
+	SoundPlayer* soundPlayer;
+	void drawResourcesIcons();
+	void drawResourcesIcons(bool);
+	void drawUnitIcons();
+	void drawMinimap();
+	void drawUI();
+	void drawStatistics(int oldtimeSinceStart, int w, int h);
+	void drawGameplay();
+	void drawMenu();
 
-	void drawTerrain();
+	void IsFinished();
+	void setFinished();
+	bool getFinished();
+	void drawNotEnoughResourcesAlert();
+	void drawVictoryScreen();
+	void drawHealthbars(vector<shared_ptr<Unit>> units);
+	void render();
+
+	void startStandard();
+	void startDefense();
+
+	bool inMenu();
+	bool inGame();
+	void goToMenu();
+	void manageMenu();
 
 	static SCameraState playerCamera;
 	static void initCamera();
-	vector <shared_ptr<Targetable>>getEntities();
-	void spawnMinerals(vector<vec3>);
-};
 
-inline void Game::drawTerrain()
-{
 
-	//glDisable(GL_LIGHTING);
-	glBegin(GL_TRIANGLE_STRIP);
-
-	/*{
-			  //.
-		
-		//.		.
-		glNormal3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(-30.0f, 0.0f, 130.0f);
-
-		glNormal3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(130, 0.0f, 130);
-
-		glNormal3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(-30, 0.0f, -30);
-
-		
-		//.		.
-
-		//.		
-		glNormal3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(130.0f, 0.0f, -30.0f);
-
-		glNormal3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(130, 0.0f, 130);
-
-		glNormal3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(-30, 0.0f, -30);
-		
-
-		
-	}*/
-
+	vector<shared_ptr<Unit>> Game::getEnemies()
 	{
-		for(int i=0;i<GRIDSIZE;i++)
-		{
-			for(int j=0;j<GRIDSIZE;j++)
-			{
-				
-			}
-		}
+		return enemies;
+	}
+	vector <shared_ptr<Targetable>> Game::getGameEntities()
+	{
+		return entities;
 	}
 
+	void spawnMinerals(vector<vec3>);
+	void spawnEnemies(vector<vec3>);
+};
 
-	glEnd();
-	//glEnable(GL_LIGHTING);
-
-}
 

@@ -187,13 +187,13 @@ bool Grid::testNeighbours(int size, int x, int z)
 void  Grid::testColision(shared_ptr<Unit> u, int i, int j)
 {
 	int range = 1;
-	int row_limit = 99;
+	int row_limit = 1024;
 	if (row_limit > 0) {
-		int column_limit = 99;
+		int column_limit = 1024;
 		for (int x = max(0, i - range); x <= min(i + range, row_limit); x++) {
 			for (int y = max(0, j - range); y <= min(j + range, column_limit); y++) {
-				//if (x != i || y != j) {
-					//try {
+				if (x != i || y != j) {
+					
 					if (occupying[x][y] != NULL&&occupying[x][y] != u)
 					{
 						//potencjalna kolizja
@@ -203,16 +203,10 @@ void  Grid::testColision(shared_ptr<Unit> u, int i, int j)
 						if (distance < 0.75f) {//TODO uzaleznic od modelu
 							//u->setDestination();
 						}
-						
-						
 					}
 						
-					//}
-					//catch (int ex) {
-					;
-					//}
-
-				//}
+						
+				}
 			}
 		}
 	}
@@ -228,20 +222,14 @@ void  Grid::leave(int x, int z)
 shared_ptr<Targetable> Grid::searchTargets(int i, int j,float r)
 {
 	int range = ceil(r);
-	int row_limit = 99;
+	int row_limit = 1024;
 	if (row_limit > 0) {
-		int column_limit = 99;
+		int column_limit = 1024;
 		for (int x = max(0, i - range); x <= min(i + range, row_limit); x++) {
 			for (int y = max(0, j - range); y <= min(j + range, column_limit); y++) {
 				if (x != i || y != j) {
-					//try {
 						if (occupying[x][y] != NULL)
 							return occupying[x][y];
-					//}
-					//catch (int ex) {
-						;
-					//}
-					
 				}
 			}
 		}

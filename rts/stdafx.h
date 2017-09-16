@@ -5,7 +5,7 @@
 
 #pragma once
 #pragma comment(lib, "irrKlang.lib")
-
+#pragma comment(lib,"corona")
 #pragma warning (disable : 4996)
 
 #include <iostream>
@@ -31,6 +31,7 @@ using namespace std;
 #include "vectors.h"
 #include "Camera.h"
 #include "KeyFlags.h"
+#include "SoundPlayer.h"
 #include "Entity.h"
 #include "Targetable.h"
 #include "MineralField.h"
@@ -49,18 +50,22 @@ using namespace std;
 #include "BomberT2.h"
 #include "Transporter.h"
 #include "ReconPlane.h"
+#include "Headquarters.h"
 #include "Factory.h"
 #include "Airport.h"
 #include "Generator.h"
 #include "Grid.h"
+#include "Resourcemanager.h"
 #include "Player.h"
-
+#include "Corona.h"
+#include "Bitmap.h"
+#include "Texture.h"
+#include "Terrain.h"
 
 #include "MousePos.h"
 #include "Resources.h"
 #include "Structs.h"
 #include "Quadtree.h"
-#include "SoundPlayer.h"
 #include "Game.h"
 #include "Mouse.h"
 

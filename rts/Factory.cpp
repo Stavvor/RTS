@@ -26,4 +26,14 @@ void Factory::takeDamage()
 
 void Factory::drawSelf()
 {
+	glDisable(GL_CULL_FACE);
+	vec3 temp = this->getPosition();
+	glPushMatrix();
+	glColor3f(0, 0, 0);
+	glTranslatef(temp.x, temp.y, temp.z);
+	glScalef(4, 4, 4);
+	
+	glCallList(Resources::factory);
+	glPopMatrix();
+	glEnable(GL_CULL_FACE);
 }

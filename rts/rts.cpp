@@ -1,12 +1,15 @@
 #include "stdafx.h"
 #include "rts.h"
 
-Game* game;
+
+
 Player* player;
-SoundPlayer* soundPlayer;
+Game* game;
+ResourceManager* resourceManager;
 
 vector<shared_ptr<Targetable>> minerals;//TODO wywalic stad...
 
+bool checking;
 int mouseX;
 int mouseY;
 
@@ -15,10 +18,10 @@ int oldTimeSinceStart = 0;
 int w;
 int h;
 
-int main(int argc, char**argv){
+int main(int argc, char**argv) {
 
-	
-	#pragma region testy jednostek
+
+#pragma region testy jednostek
 	/*
 	////////////////////////////////////			TEST TWORZENIA I CZYSZCZENIA OBIEKTOW
 	Player* player;
@@ -38,7 +41,7 @@ int main(int argc, char**argv){
 	delete(player);
 	return 0;
 	*/
-	
+
 	////////////////////////////////////			TEST OBLICZANIA ODLEGLOSCI
 	/*
 
@@ -46,7 +49,7 @@ int main(int argc, char**argv){
 	vec3 posA = { 0,0,0 };
 	//vec3 posB = { 6.0,0,0 };  //jest ok
 	vec3 posB = { 6.1,0,0 };	//za daleko; dziala!!!!
-	
+
 	Unit* a;
 	Unit* b;
 	a = new Soldier("Infantry", 8, 6, 7, "Soldier", posA, 50, 0.5, &upgrade, &upgrade);
@@ -60,10 +63,10 @@ int main(int argc, char**argv){
 	delete(b);
 	return 0;
 	*/
-	
+
 	////////////////////////////////////			TEST UPGRADOW
 	/*
-	
+
 	Player*player;
 	player = new Player("testPlayer");
 	vec3 posA = { 0,0,0 };
@@ -71,7 +74,7 @@ int main(int argc, char**argv){
 	player->buildStructure();
 	player->upgradeWeapons();
 	player->trainUnit(player->getMyBuildings()[0]);
-	
+
 	cout<< *player->getMyUnits()[0]->upgrades->weaponUpgradesPtr << endl;
 	player->upgradeWeapons();
 	player->upgradeWeapons();		//DZIALA! wskaznik na strukture z upgradami w Targetable
@@ -124,7 +127,7 @@ int main(int argc, char**argv){
 	delete(player);
 	return 0;
 	*/
-	
+
 	////////////////////////////////////			test naprawy		
 	/*
 	unsigned int armorUpgradeA = 0;
@@ -132,7 +135,7 @@ int main(int argc, char**argv){
 	vec3 posA = { 0,0,0 };
 	unit = new Worker("worker",posA, 40, 1,5,6, &armorUpgradeA);
 	delete(unit);
-    return 0;
+	return 0;
 	*/
 	/*
 	////////////////////////////////////			test podnoszenia jednostek
@@ -170,7 +173,7 @@ int main(int argc, char**argv){
 	cout << player->getMyBuildings()[0]->getHitPoints()<<endl;
 	worker->repair(player->getMyBuildings()[0]);
 	worker1->repair(player->getMyBuildings()[0]); //TODO jak to zrownoleglic?? czy OnTimer wystarczy?
- 	cout << player->getMyBuildings()[0]->getHitPoints() << endl;
+	cout << player->getMyBuildings()[0]->getHitPoints() << endl;
 	delete(player);
 	delete(worker);
 	delete(worker1);
@@ -199,7 +202,7 @@ int main(int argc, char**argv){
 
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 360);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); 
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
 	glutCreateWindow("openGl rtsgame");
 
@@ -214,7 +217,7 @@ int main(int argc, char**argv){
 
 	glutSpecialFunc(OnSpecialKeyPress);
 	glutSpecialUpFunc(OnSpecialKeyUp);
-	
+
 	glutPassiveMotionFunc(MouseCords);
 	glutMouseWheelFunc(mouseWheel);
 	//TODO callbacki wszystkie interakcje jednostek ktore nie sa instantowe...
@@ -224,11 +227,12 @@ int main(int argc, char**argv){
 	glutTimerFunc(17, queueManager, 0);
 	glutTimerFunc(17, posManager, 0);
 	glutTimerFunc(17, attackManager, 0);
-	glutTimerFunc(1200, attackCooldown, 0);
+
+	//glutTimerFunc(1200, attackCooldown, 0);
 	//glutIgnoreKeyRepeat(1); //TODO sprwdzic repetycje
-	
+
 	player = new Player("testPlayer");
-	
+
 	/*
 	player->buildStructure();
 	player->trainUnit(player->getMyBuildings()[0]);
@@ -237,74 +241,84 @@ int main(int argc, char**argv){
 	player->trainUnit(player->getMyBuildings()[0]);
 	player->getMyUnits()[2]->setPosition({ 4.0f,0.0f,3.0f });
 	*/
-	
+
 	//player->createWorker();
 	//player->getMyUnits()[0]->setTarget(mineral);
-	player->buildStructure();
 	//player->trainUnit(player->getMyBuildings()[0]);
 	//player->trainUnit(player->getMyBuildings()[0]);
 	//player->getMyUnits()[1]->setPosition({1.0f,0.0f,2.0f});
-	
+
 	//player->getMyUnits()[0]->getHasMinerals();
 	//cout << player->getResources() << endl;
 
 	glEnable(GL_DEPTH_TEST);
+
 	const GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	const GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	const GLfloat light_position[] = { 50.0f, 50.0f, 50.0f, 0.0f };
-	const GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+
+	//const GLfloat light_ambient[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+	//const GLfloat light_diffuse[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+	//const GLfloat light_specular[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+	//const GLfloat light_position[] = { 50.0f, 50.0f, 50.0f, 0.0f };
+
+	//def
+	const GLfloat mat_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	const GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 	const GLfloat mat_specular[] = { 0.3f, 0.3f, 0.3f, 1.0f };
 	const GLfloat mat_shininess[] = { 100.0 };
+
+
+
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	//glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	//glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	//glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glShadeModel(GL_SMOOTH);
-	
 
 	Resources* resources;
 	resources = new Resources;
-	Resources::loadModels();
+	resources->Initializiation();	//load models.. blah blah
+	resources->setLayout();
 
 	game = new Game();
 	player->grid->prepareGrid();
 	game->initCamera();
-	resources->setLayout();
-	game->spawnMinerals(resources->mineralLayout);
-	
-	soundPlayer = new SoundPlayer;
-	soundPlayer->loadAllSounds();
-	soundPlayer->playSound(soundPlayer->terran1);
-	
-	//game->playMusic();
-
-	//Resources::loadTextures();
-	
-	
+	game->initialization();
 	//TODO gamemode menu....
 
-	while(!KeyFlags::keystate[27])
+
+	//terrainPtr->initialization();
+	//terrainPtr->getPixelArray();
+
+	resourceManager = new ResourceManager;
+
+	player->buildStructure<Headquarters>({ 65, 0, 60 });
+
+	//glutMainLoop();
+	while (1)
 	{
-		glutMainLoopEvent();
-		//glutMainLoop();
-	}
+		glutMainLoop();
+		//glutMainLoopEvent();
+		if (game->quit) break;
+	} 
 	
 	player->clearMemory();
-	delete player;
+	
 	delete game;
-	delete soundPlayer;
+	delete player;
 	delete resources;
+	delete resourceManager;
 	return 0;
 }
 
@@ -320,11 +334,20 @@ void OnKeyPress(unsigned char key, int x, int y) {
 void OnKeyDown(unsigned char key, int x, int y) {
 	//printf("KeyDown: %c\n", key);
 	
-	/*if (key == 27) { // ESC - wyjœcie
+	if (key == 27) { // ESC - wyjœcie
 		//TODO czyscic pamiec przed zakonczeniem gry
+		if(game->inMenu())
+		{
+			game->quit = true;
+			glutLeaveMainLoop(); //TODO WTF dlaczego
+			
+		}
+		if(game->inGame())
+		{
+			game->goToMenu();
+		}
 		
-		glutLeaveMainLoop(); //TODO WTF dlaczego
-	}*/
+	}
 	if (glutGetModifiers() == 2)
 	{
 		switch (key)
@@ -364,37 +387,53 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 	if(glutGetModifiers()== 1)
 	{
+		//combat	SType, Idamage, IAttackCooldown, Frange, FScanRange, Sname, IhitPoints, Fspeed
+		//mecht1	"mechanical", 8, 50, 15, 18, "mecht1", 50, 0.5
+		//mecht2	"mechanical", 16, 42, 25, 28, "mecht2", 70, 0.5
+		//tankt1	"mechanical", 15, 80, 25, 26, "mecht1", 75, 0.5
+		//tankt2	"mechanical", 55, 65, 30, 26, "mecht1", 250, 0.5
+		//fightert1	"flying",15,25,20,22,"figtert1",45,3.5
+		//fightert2 "flying", 35, 22, 25, 27, "figtert1", 75, 4.5
+		//bombert1 "flying", 50, 50, 20, 22, "figtert1", 75, 2.5
+		//bombet2  
+		//utility	Sname, Stype Icooldown, IHitPoints, speed, range, scanRange
+		//recon "recon","flying", 25, 25, 4.5, 20, 25
+
 		switch(key)
 		{
 		case 'Q'://'q' || 'Q' //tODO resolve
 		
+				
 			for (auto building : player->getMyBuildings())
 			{
-				player->trainUnit<MechT2>(building, 5);
+				//player->trainUnit<MechT2>(building, 5, "mechanical", 16, 42, 25, 28, "mecht2", 120, 0.5,false);//TODO pass values for constructor
 			}
 			break;
 		
 		case 'W':
 		
+			
+
 			for (auto building : player->getMyBuildings())
 			{
-				player->trainUnit<TankT2>(building, 5);
+				if (resourceManager->buildCommand(100, 50))
+					player->trainUnit<TankT2>(building, 5, "mechanical", 55, 65, 30, 26, "mecht1", 250, 0.5, false);
 			}
 			break;
 		
 		case 'E':
-		
+
 			for (auto building : player->getMyBuildings())
 			{
-				player->trainUnit<FighterT2>(building, 5);
+				//player->trainUnit<FighterT2>(building, 5, "flying", 35, 22, 25, 27, "figtert2", 80, 4.5, false);
 			}
 			break;
-		
+			break;
 		case 'R':
 		
 			for (auto building : player->getMyBuildings())
 			{
-				player->trainUnit<BomberT2>(building, 5);
+				//player->trainUnit<BomberT2>(building, 5, "flying", 95, 65, 10, 12, "bombert2", 95, 3.5, false);
 			}
 			break;
 		
@@ -436,11 +475,13 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 	switch(key)
 	{
-	case 'q':
+	case 'Q':
+	case 'q'://TODO G g
 	{
 		for (auto building : player->getMyBuildings())
 		{
-			player->trainUnit<MechT1>(building, 5);
+			if (resourceManager->buildCommand(25, 10))
+				player->trainUnit<MechT1>(building, 5,"mechanical",8,50,15,18,"mecht1",50,0.4, false);
 		}
 		break;
 	}
@@ -448,30 +489,46 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	{
 		for (auto building : player->getMyBuildings())
 		{
-			player->trainUnit<TankT1>(building, 5);
+			if (resourceManager->buildCommand(30, 15))
+				player->trainUnit<TankT1>(building, 5,"mechanical", 15, 80, 25, 26, "mecht1", 75, 0.5, false);
 		}
 		break;
 	}
 	case 'e':
 	{
-		for (auto building : player->getMyBuildings())
-		{
-			player->trainUnit<FighterT1>(building, 5);
-		}
+
+//		for (auto building : player->getMyBuildings())
+//		{
+//			player->trainUnit<FighterT1>(building, 5,"flying",15,25,20,22,"figtert1",45,3.5);
+//		}
+//		break;
 		break;
 	}
 	case 'r':
 	{
 		for (auto building : player->getMyBuildings())
-		{
-			player->trainUnit<BomberT1>(building, 5);
+		{		
+			//player->trainUnit<BomberT1>(building, 5, "flying", 50, 50, 5, 22, "figtert1", 75, 2.5, false);
 		}
 		break;
 	}
+	
 	case 't':
 	{
-		
-		player->createWorker();//TODO FIX
+		if (resourceManager->buildCommand(55, 10))
+		{
+			player->createWorker();//TODO FIX
+		}
+		break;
+	}
+	case 'u':
+	{
+		for (auto building : player->getMyBuildings())
+		{
+
+			player->trainUtilityUnit<ReconPlane>(building, 5, "recon","flying", 25, 25, 10, 20, 25);
+		}
+		break;
 	}
 
 	case 's':{
@@ -480,9 +537,26 @@ void OnKeyDown(unsigned char key, int x, int y) {
 			unit->setDestination(unit->getPosition());
 			unit->dir = unit->dir;
 		}
-	}
 		break;
-	 
+	}
+	case 'f': {
+		player->toggleFriendlyFire();
+		break;
+	}
+	case 'g': {
+		if (resourceManager->buildCommand(1000, 800))
+		{
+			player->upgradeWeapons();
+		}
+		break;
+	}
+	case 'h': {
+		if (resourceManager->buildCommand(1000, 800))
+		{
+			player->upgradeArmor();
+		}
+		break;
+	}
 	}
 
 }
@@ -495,7 +569,6 @@ void OnKeyUp(unsigned char key, int x, int y) {
 // Aktualizacja stanu gry - wywo³ywana za poœrednictwem zdarzenia-timera.
 void OnTimer(int id) {
 	
-	// Chcemy, by ta funkcja zosta³a wywo³ana ponownie za 17ms.
 	glutTimerFunc(17, OnTimer, 0);
 
 	/**/
@@ -503,6 +576,10 @@ void OnTimer(int id) {
 	for (auto unit : player->getMyUnits())
 	{
 		quadtree.insert(Data<shared_ptr<Unit>>(Point(unit->getPosition().x, unit->getPosition().z), unit));
+	}
+	for (auto enemy : game->getEnemies())
+	{
+		quadtree.insert(Data<shared_ptr<Unit>>(Point(enemy->getPosition().x, enemy->getPosition().z), enemy));
 	}
 	for(auto unit : player->getMyUnits())
 	{
@@ -552,30 +629,11 @@ void OnTimer(int id) {
 		}
 			
 		potentialCollision.clear();
-		//TODO pooprawic to zeby jakos wygladalo...
+		//TODO fix so it wont look like shit...
 	}
 
-	for (auto unit : player->getMyUnits())
-	{
-		vec3 currentPos = unit->getPosition();
-		vec3 destination = unit->getDestination();
-		currentPos = { currentPos.x, 0.0f, currentPos.z };
-		float x = unit->dir.x;
-		float y = 1.0f;
-		float z = unit->dir.z;
-		vec3 newPos = { currentPos.x + x*0.2,currentPos.y + y*0.2,currentPos.z + z*0.2 };
-		float estTarget = 0.1;
-		if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
-		{
-			unit->calculateVecAngle();
-			unit->setPosition(newPos);
-			unit->setIsMoving(true);
-		}
-		else
-		{
-			unit->setIsMoving(false);
-		}
-	}
+	moveEntities(player->getMyUnits());
+	moveEntities(player->getMyWorkers());
 
 		/*
 		 for (auto unit : player->getMyUnits())
@@ -624,6 +682,7 @@ void OnTimer(int id) {
 
 		}
 		 */
+
 		if (KeyFlags::isUpKeyPressed || KeyFlags::mouseTriggerCameraUp) {
 			Game::playerCamera.pos.x += Game::playerCamera.dir.x * Game::playerCamera.speed;
 			//playerCamera.pos.y += playerCamera.dir.y * playerCamera.speed;
@@ -647,38 +706,28 @@ void OnTimer(int id) {
 			Game::playerCamera.pos.z -= -Game::playerCamera.dir.x * Game::playerCamera.speed;
 		}
 		//TODO skosy
-		if (KeyFlags::keystate['q']) {
+		if (KeyFlags::keystate['o']) {
 				float b = atan2(Game::playerCamera.dir.z, Game::playerCamera.dir.x);
 				float a = -0.05f;
 
 				Game::playerCamera.dir.x = cos(b + a);
 				Game::playerCamera.dir.z = sin(b + a);
-			/*for(auto unit: player->getMyUnits())	//TODO test miningu, przenisc
-			{
-				vec3 myPos = unit->getPosition();
-				shared_ptr<Targetable> closest;
-				float maxDistance = GRIDSIZE*sqrt(2);
-				for(auto mineral : game->getEntities())
-				{
-					vec3 targetPos = mineral->getPosition();
-					float distance=sqrt(pow((myPos.x - targetPos.x), 2) + pow((myPos.y - targetPos.y), 2) + pow((myPos.z - targetPos.z), 2));
-					if(distance<=maxDistance)
-					{
-						closest = mineral;
-						maxDistance = distance;
-					}
-				}
-				unit->setTarget(closest);
-			}*/
+			/**/
 	
 			}
-		if (KeyFlags::keystate['e']) {
+		if (KeyFlags::keystate['p']) {
 				float a = atan2(Game::playerCamera.dir.z, Game::playerCamera.dir.x);
 				float b = 0.05f;
 
 				Game::playerCamera.dir.x = cos(a + b);
 				Game::playerCamera.dir.z = sin(a + b);
 			}
+		if (KeyFlags::keystate['z']) {
+			game->startStandard();	//TODO move to different key...
+		}
+		if (KeyFlags::keystate['x']) {
+			game->startDefense();
+		}
 		
 		/*	if (glutGetModifiers() == 2) {
 				switch (key)
@@ -864,6 +913,8 @@ void OnModifiedDown(unsigned char key, int i, int y)
 
 void raycast(int x,int y,vec3* dest, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end)
 {
+	if (!checking) return;
+	checking = true;
 	double matModelView[16], matProjection[16];
 	int viewport[4];
 	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
@@ -873,8 +924,8 @@ void raycast(int x,int y,vec3* dest, mousePos* mouse_pos, mousePos* mouse_left_c
 	double winY = viewport[3] - (double)y;
 	gluUnProject(winX, winY, 0.0, matModelView, matProjection, viewport, &Mouse::mouseLeftClickPos_start.x, &Mouse::mouseLeftClickPos_start.y, &Mouse::mouseLeftClickPos_start.z);
 	gluUnProject(winX, winY, 1.0, matModelView, matProjection, viewport, &Mouse::mouseLeftClickPos_end.x, &Mouse::mouseLeftClickPos_end.y, &Mouse::mouseLeftClickPos_end.z);
-	//cout << "x: " << m_start.x << "y: " << m_start.y << "z: " << m_start.z << endl;
-	dest->y = 1.0f;
+	
+	dest->y = 0.0f;
 	float t = (0 - Mouse::mouseLeftClickPos_start.y) / (Mouse::mouseLeftClickPos_end.y - Mouse::mouseLeftClickPos_start.y);
 	
 	dest->x = t*(Mouse::mouseLeftClickPos_end.x - Mouse::mouseLeftClickPos_start.x) + Mouse::mouseLeftClickPos_start.x;
@@ -887,10 +938,12 @@ void raycast(int x,int y,vec3* dest, mousePos* mouse_pos, mousePos* mouse_left_c
 		dest->z = 0;
 	if (dest->z > GRIDSIZE)
 		dest->z = GRIDSIZE;*/
-
+	
 }
 void raycastEnd(int x, int y, vec3* dest, mousePos* mouse_pos, mousePos* mouse_left_click_pos_end)
 {
+	if (!checking) return;
+	checking = true;
 	double matModelView[16], matProjection[16];
 	int viewport[4];
 	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
@@ -900,8 +953,8 @@ void raycastEnd(int x, int y, vec3* dest, mousePos* mouse_pos, mousePos* mouse_l
 	double winY = viewport[3] - (double)y;
 	gluUnProject(winX, winY, 0.0, matModelView, matProjection, viewport, &Mouse::mouseLeftUpPos_start.x, &Mouse::mouseLeftUpPos_start.y, &Mouse::mouseLeftUpPos_start.z);
 	gluUnProject(winX, winY, 1.0, matModelView, matProjection, viewport, &Mouse::mouseLeftUpPos_end.x, &Mouse::mouseLeftUpPos_end.y, &Mouse::mouseLeftUpPos_end.z);
-	//cout << "x: " << m_start.x << "y: " << m_start.y << "z: " << m_start.z << endl;
-	dest->y = 1.0f;
+	
+	dest->y = 0.0f;
 	float t = (0 - Mouse::mouseLeftUpPos_start.y) / (Mouse::mouseLeftUpPos_end.y - Mouse::mouseLeftUpPos_start.y);
 	dest->x = t*(Mouse::mouseLeftUpPos_end.x - Mouse::mouseLeftUpPos_start.x) + Mouse::mouseLeftUpPos_start.x;
 	if (dest->x < 0)
@@ -916,25 +969,34 @@ void raycastEnd(int x, int y, vec3* dest, mousePos* mouse_pos, mousePos* mouse_l
 }
 void OnMouseKeyPress(int button, int state, int x, int y)
 {
-	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP)) {//TODO check in sc
+	
+	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN)) {
 		if (KeyFlags::keystate['w'] || KeyFlags::keystate['W'])
 		{
-			if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
+			if (resourceManager->buildCommand(30, 0))
 			{
-				vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
-				player->buildStructure<Generator>(pos);
+				if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
+				{
+					vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
+					player->buildStructure<Generator>(pos);
+				}
 			}
-			//TODO a move implementation
+			
+			
 		}
 		if (KeyFlags::keystate['e'] || KeyFlags::keystate['E'])
 		{
-			if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
+			if (resourceManager->buildCommand(50, 0))
 			{
-				vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
-				
-				player->buildStructure<Factory>(pos);
+				if (player->grid->testGrid(4, floor(Mouse::destStart.x), floor(Mouse::destStart.z)))
+				{
+					vec3 pos = { floor(Mouse::destStart.x),1.0f,floor(Mouse::destStart.z) };
+
+					player->buildStructure<Factory>(pos);
+				}
 			}
-			//TODO a move implementation
+			
+			
 		}
 		if (KeyFlags::keystate['r'] || KeyFlags::keystate['R'])
 		{
@@ -944,7 +1006,6 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 
 				player->buildStructure<Factory>(pos);
 			}
-			//TODO a move implementation
 		}
 		//TODO if 'T' 
 		//structure (HQ)
@@ -1089,11 +1150,13 @@ void OnMouseKeyPress(int button, int state, int x, int y)
 			*/
 		}
 	}
+	checking = true;
 }
 
 
 void OnMouseKeyUp(int button, int state, int x, int y)
 {
+	checking = false;
 }
 
 
@@ -1133,136 +1196,39 @@ void mouseWheel(int button, int dir, int x, int y)
 	if (dir > 0)
 	{
 		if (Game::playerCamera.pos.y >= Game::playerCamera.minHeight) {
-			Game::playerCamera.pos.x += Game::playerCamera.dir.x * Game::playerCamera.speed * 5;
-			Game::playerCamera.pos.y += Game::playerCamera.dir.y * Game::playerCamera.speed * 5;
-			Game::playerCamera.pos.z += Game::playerCamera.dir.z * Game::playerCamera.speed * 5;
+			Game::playerCamera.pos.x += Game::playerCamera.dir.x * Game::playerCamera.speed * 2;
+			Game::playerCamera.pos.y += Game::playerCamera.dir.y * Game::playerCamera.speed * 2;
+			Game::playerCamera.pos.z += Game::playerCamera.dir.z * Game::playerCamera.speed * 2;
 		}
 	}
 	else
 	{
 		if (Game::playerCamera.pos.y <= Game::playerCamera.maxHeight){
-			Game::playerCamera.pos.x -= Game::playerCamera.dir.x * Game::playerCamera.speed * 5;
-			Game::playerCamera.pos.y -= Game::playerCamera.dir.y * Game::playerCamera.speed * 5;
-			Game::playerCamera.pos.z -= Game::playerCamera.dir.z * Game::playerCamera.speed * 5;
+			Game::playerCamera.pos.x -= Game::playerCamera.dir.x * Game::playerCamera.speed * 2;
+			Game::playerCamera.pos.y -= Game::playerCamera.dir.y * Game::playerCamera.speed * 2;
+			Game::playerCamera.pos.z -= Game::playerCamera.dir.z * Game::playerCamera.speed * 2;
 		}
 	}
 	
 
 }
 
+
+
+
 void OnRender() {
-	soundPlayer->update3DPos(Game::playerCamera.pos,Game::playerCamera.dir,{0.0f,0.0f,0.0f},{0.0f,1.0f,0.0f});
-	//TODOgdzie to ustawic?
+
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3d(0.902, 0.902, 0.980);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	setOrthographicProjection();
-	glPushMatrix();
-
-	int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
-	int deltaTime = timeSinceStart - oldTimeSinceStart;
-
-	stringstream time;
-
-	oldTimeSinceStart = timeSinceStart;
-	
-	int secs = (timeSinceStart / 1000) % 60;
-	int mins = (timeSinceStart / 60000) % 60;
-	int hours = (timeSinceStart / 3600000) % 24;
-	time << hours << "H:" << mins << "M:"<<secs<<"S";
-
-	const int font = (int)GLUT_BITMAP_9_BY_15;
-
-	//GLUT_WINDOW_HEIGHT 
-	//GLUT_WINDOW_WIDTH
-	
-
-	renderBitmapString(w- 320, 30, (void *)font,player->getResources());
-	renderBitmapString(w - 220, 30, (void *)font, player->getEnergy());
-	renderBitmapString(w - 110, 30, (void *)font, player->getSupplyToPrint().c_str());
-	//renderBitmapString(w - 110, 60, (void *)font, player->getMyBuildings().size());		//TODO ogarnac
-	renderBitmapString(w - 320, 60, (void *)font, "weapon upgrades");
-	renderBitmapString(w - 170, 60, (void *)font, player->getWeaponUpgrades());
-	renderBitmapString(w - 320, 90, (void *)font, "armor upgrades");
-	renderBitmapString(w - 170, 90, (void *)font, player->getArmorUpgrades());
-	renderBitmapString(200, h-280, (void *)font, time.str().c_str());
-
-	stringstream s;
-//	uto player->getSelectedUnits();
-//	for(int i =0; i < player->getSelectedUnits().size();i++)
-	for(auto unit:player->getSelectedUnits())
-	{
-		int y = 900;
-		s << "Name: " << unit->getName();
-		renderBitmapString(300, y, (void *)font, s.str().c_str());
-		y += 15;
-		s.str("");
-		s << "Target: " << unit->getTarget();
-		renderBitmapString(300, y, (void *)font, s.str().c_str());
-		s.str("");
-		y += 15;
-		s <<"Pos x: "<< unit->getPosition().x << " z: " << unit->getPosition().z;
-		renderBitmapString(300, y, (void *)font, s.str().c_str() );
-		y += 15;
-		s.str("");
-		s << "Dir x: "<< unit->getDestination().x << " z: " << unit->getDestination().z;
-		renderBitmapString(300, y, (void *)font, s.str().c_str());
-		s.str("");
-	}
-	
-
-	glutWireCube(2.0f);
-
-	glPopMatrix();
-	resetPerspectiveProjection();
 	
 	
-
-	gluLookAt(
-		Game::playerCamera.pos.x, Game::playerCamera.pos.y, Game::playerCamera.pos.z, // Pozycja kamery
-		Game::playerCamera.pos.x + Game::playerCamera.dir.x, Game::playerCamera.pos.y + Game::playerCamera.dir.y, Game::playerCamera.pos.z + Game::playerCamera.dir.z, // Punkt na ktory patrzy kamera (pozycja + kierunek)
-		0.0f, 1.0f, 0.0f // Wektor wyznaczajacy pion
-	);
-
-	game->drawTerrain();
-	for (auto min : game->getEntities())
-	{
-		if(!min->getIsDead())
-		{
-			vec3 temp = min->getPosition();
-			glPushMatrix();
-			glTranslatef(temp.x, temp.y, temp.z);
-			glColor3f(0, 0, 1);
-			glutSolidCube(1);
-			glPopMatrix();
-		}
-		
-	}
-
-	for (auto unit : player->getMyUnits())
-	{
-		
-		if (!unit->getIsDead())
-			unit->drawSelf();
-		
-	}
-
-	for (auto building : player->getMyBuildings())
-	{
-		if (!building->getIsDead()) {
-			vec3 temp = building->getPosition();
-			glPushMatrix();
-			glTranslatef(temp.x, temp.y, temp.z);
-			glutWireCube(4.0f);
-			glPopMatrix();
-		}
-	}
+	game->render();
 
 	glFlush();
 	glutSwapBuffers();
 	glutPostRedisplay();
-
 }
 
 
@@ -1272,7 +1238,7 @@ void OnReshape(int width, int height) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glViewport(0, 0, width, height);
-	gluPerspective(60.0f, (float)width / height, .01f, 100.0f);
+	gluPerspective(60.0f, (float)width / height, .01f, 1000.0f);//TODO adjust
 }
 
 //callbacki do zarzadzania jednostkami
@@ -1298,7 +1264,7 @@ void queueManager(int type){
 void attackCooldown(int)
 {
 
-	//glutTimerFunc(17, attackCooldown, 0);
+	
 }
 /*
 void repairCommand(int a)
@@ -1321,7 +1287,7 @@ void repairCommand(int a)
 void unitDetails(int)
 {
 
-
+	cout << "X "<< Game::playerCamera.pos.x<< "Y "<<Game::playerCamera.pos.y<< "Z "<< Game::playerCamera.pos.z << endl;
 /*	cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
 	
 	int i = 0;
@@ -1350,7 +1316,7 @@ void unitDetails(int)
 	cout << player->getMyUnits().size();
 
 	glutTimerFunc(3000, unitDetails, 0);*/
-	
+	glutTimerFunc(1000, unitDetails, 0);
 }
 
 void actionTimer(int a)
@@ -1358,6 +1324,34 @@ void actionTimer(int a)
 	for (auto unit : player->getMyUnits())
 	{
 		unit->updateCooldown(1);
+	}
+	for (auto worker : player->getMyWorkers())
+	{
+		worker->updateCooldown(1);
+		if (worker->getTarget() == NULL)
+		{
+			
+			vec3 myPos = worker->getPosition();
+			shared_ptr<Targetable> closest;
+			float maxDistance = GRIDSIZE*sqrt(2);
+			for (auto mineral : game->entities)
+			{
+				vec3 targetPos = mineral->getPosition();
+				float distance = sqrt(pow((myPos.x - targetPos.x), 2) + pow((myPos.y - targetPos.y), 2) + pow((myPos.z - targetPos.z), 2));
+				if (distance <= maxDistance&&mineral->targetedBy.size()<3)
+				{
+					closest = mineral;
+					maxDistance = distance;
+				}
+
+			}
+			worker->setTarget(closest);
+			closest->targetedBy.push_back(worker);
+		}
+	}
+	for (auto enemy : game->enemies)
+	{
+		enemy->updateCooldown(1);
 	}
 	for(auto building : player->getMyBuildings())
 	{
@@ -1368,64 +1362,114 @@ void actionTimer(int a)
 
 void posManager(int a)
 {
-	
-	for (auto unit : player->getMyUnits())
+	for (auto enemy : game->enemies)
 	{
-		vec3 pos=unit->getPosition();
+		vec3 pos = enemy->getPosition();
 		int x = floor(pos.x);
 		int z = floor(pos.z);
-		if(x>0 && z>0)
+		if (x > 0 && z > 0)
 		{
-			
-		
-		player->grid->testColision(unit, unit->getCurrentXPos(), unit->getCurrentZPos());
-//		if(!player->grid->testColision(unit, x, z))
-//		{
-//			cout << "kolizja" << endl;
-//		}
-		//TODO rozwiazac kolizje; test dziala
-		if(x!= unit->getCurrentXPos() && z != unit->getCurrentZPos())
-		{
-			//player->grid->free(unit->getCurrentXPos(), unit->getCurrentZPos());
-			player->grid->leave(unit->getCurrentXPos(), unit->getCurrentZPos());
-			//player->grid->fill(x, z);
-			player->grid->occupy(unit, x, z);
-			unit->setCurrentGridPos(x, z);
+			player->grid->occupy(enemy, x, z);
+			enemy->setCurrentGridPos(x, z);
 		}
-		else if(x != unit->getCurrentXPos() && z == unit->getCurrentZPos())
-		{
-			//player->grid->free(unit->getCurrentXPos(),z);
-			player->grid->leave(unit->getCurrentXPos(), z);
-			//player->grid->fill(x, z);
-			player->grid->occupy(unit, x, z);
-			unit->setCurrentGridPos(x,z);
-		}
-		else if(x == unit->getCurrentXPos() && z != unit->getCurrentZPos())
-		{
-			//player->grid->free(x, unit->getCurrentZPos());
-			player->grid->leave(x, unit->getCurrentZPos());
-			//player->grid->fill(x, z);
-			player->grid->occupy(unit, x, z);
-			unit->setCurrentGridPos(x, z);
-		}
-		if (unit->getTarget() == NULL && !unit->getIsMoving()){	//TODO atak wstrzymany...
-			shared_ptr<Targetable>target = player->grid->searchTargets(x, z, unit->getRange());
-			if(target!=NULL)
+		if (enemy->getTarget() == NULL && !enemy->getIsMoving()) {	//TODO atak wstrzymany...
+			shared_ptr<Targetable>target = player->grid->searchTargets(x, z, enemy->getRange());
+			if (target != NULL && !target->isEnemy())		//target->isEnemy()
 			{
-				unit->setTarget(target);
-				target->addToTargetedby(unit);//TODO
+				enemy->setTarget(target);
+				target->addToTargetedby(enemy);//TODO
 			}
 		}
-		if (unit->getTarget() != NULL) {
-			if (!unit->targetInRange())
+		if (enemy->getTarget() != NULL) {
+			if (!enemy->targetInRange())
 			{
-				unit->setTarget(NULL);
+				enemy->setTarget(NULL);
 			}
-		}/**/
-		
 		}
 	}
-	glutTimerFunc(20, posManager, 0);
+	for (auto unit : player->getMyUnits())
+	{
+		vec3 pos = unit->getPosition();
+		int x = floor(pos.x);
+		int z = floor(pos.z);
+		if (x>0 && z>0)
+		{
+
+
+			player->grid->testColision(unit, unit->getCurrentXPos(), unit->getCurrentZPos());
+			//		if(!player->grid->testColision(unit, x, z))
+			//		{
+			//			cout << "kolizja" << endl;
+			//		}
+			//TODO rozwiazac kolizje; test dziala
+			if (x != unit->getCurrentXPos() && z != unit->getCurrentZPos())
+			{
+				//player->grid->free(unit->getCurrentXPos(), unit->getCurrentZPos());
+				player->grid->leave(unit->getCurrentXPos(), unit->getCurrentZPos());
+				//player->grid->fill(x, z);
+				player->grid->occupy(unit, x, z);
+				unit->setCurrentGridPos(x, z);
+			}
+			else if (x != unit->getCurrentXPos() && z == unit->getCurrentZPos())
+			{
+				//player->grid->free(unit->getCurrentXPos(),z);
+				player->grid->leave(unit->getCurrentXPos(), z);
+				//player->grid->fill(x, z);
+				player->grid->occupy(unit, x, z);
+				unit->setCurrentGridPos(x, z);
+			}
+			else if (x == unit->getCurrentXPos() && z != unit->getCurrentZPos())
+			{
+				//player->grid->free(x, unit->getCurrentZPos());
+				player->grid->leave(x, unit->getCurrentZPos());
+				//player->grid->fill(x, z);
+				player->grid->occupy(unit, x, z);
+				unit->setCurrentGridPos(x, z);
+			}
+			if (unit->getTarget() == NULL && !unit->getIsMoving()) {	//TODO atak wstrzymany...
+				shared_ptr<Targetable>target = player->grid->searchTargets(x, z, unit->getRange());
+				if (target != NULL && target->isEnemy())		//target->isEnemy()
+				{
+					unit->setTarget(target);
+					target->addToTargetedby(unit);//TODO
+				}
+			}
+			if (unit->getTarget() != NULL) {
+				if (!unit->targetInRange())
+				{
+					unit->setTarget(NULL);
+				}
+			}/**/
+
+		}
+	}
+	glutTimerFunc(50, posManager, 0);
+}
+
+void moveEntities(const vector<shared_ptr<Unit>>& entities)
+{
+	for (auto entity : entities)
+	{
+		vec3 currentPos = entity->getPosition();
+		vec3 destination = entity->getDestination();
+		auto speed = entity->getSpeed();
+		currentPos = { currentPos.x, 0.0f, currentPos.z };
+		float x = entity->dir.x;
+		float y = 1.0f;
+		float z = entity->dir.z;
+		vec3 newPos = { currentPos.x + x*0.4,currentPos.y + y*0.4,currentPos.z + z*0.4 };
+		float estTarget = 0.25;
+		if (abs(currentPos.x - destination.x) > estTarget || abs(currentPos.z - destination.z) > estTarget)
+		{
+			entity->calculateVecAngle();
+			entity->setPosition(newPos);
+			entity->setIsMoving(true);
+		}
+		else
+		{
+			entity->setIsMoving(false);
+		}
+	}
 }
 
 void attackManager(int a)
@@ -1483,4 +1527,72 @@ void resetPerspectiveProjection() {
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void drawTxt(int x, int y, string txt)
+{
+	setOrthographicProjection();
+	glPushMatrix();
+	glColor3d(0.902, 0.902, 0.980);
+	const int font = (int)GLUT_BITMAP_9_BY_15;
+	renderBitmapString(x, y, (void *)font, txt.c_str());
+	glPopMatrix();
+	resetPerspectiveProjection();
+}
+
+void gameStatistics()
+{
+	setOrthographicProjection();
+	glPushMatrix();
+	glColor3d(0.902, 0.902, 0.980);
+	int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+	int deltaTime = timeSinceStart - oldTimeSinceStart;
+	stringstream time;
+	oldTimeSinceStart = timeSinceStart;
+	int secs = (timeSinceStart / 1000) % 60;
+	int mins = (timeSinceStart / 60000) % 60;
+	int hours = (timeSinceStart / 3600000) % 24;
+	time << hours << "H:" << mins << "M:" << secs << "S";
+	const int font = (int)GLUT_BITMAP_9_BY_15;
+	renderBitmapString(w - 320, 30, (void *)font, player->getResources());
+	renderBitmapString(w - 220, 30, (void *)font, player->getEnergy());
+	renderBitmapString(w - 110, 30, (void *)font, player->getSupplyToPrint().c_str());
+	//renderBitmapString(w - 110, 60, (void *)font, player->getMyBuildings().size());		//TODO ogarnac
+	renderBitmapString(w - 320, 60, (void *)font, "weapon upgrades");
+	renderBitmapString(w - 170, 60, (void *)font, player->getWeaponUpgrades());
+	renderBitmapString(w - 320, 90, (void *)font, "armor upgrades");
+	renderBitmapString(w - 170, 90, (void *)font, player->getArmorUpgrades());
+	renderBitmapString(200, h - 280, (void *)font, time.str().c_str());
+	
+	if(resourceManager->notEnough)
+	{
+		drawTxt(w / 2 - 100, h / 2, "Not enough resources!");
+		resourceManager->txtFrame();
+	}
+		
+
+	stringstream s;
+	//	uto player->getSelectedUnits();
+	//	for(int i =0; i < player->getSelectedUnits().size();i++)
+	for (auto unit : player->getSelectedUnits())
+	{
+		int y = 900;
+		s << "Name: " << unit->getName();
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		y += 15;
+		s.str("");
+		s << "Target: " << unit->getTarget();
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		s.str("");
+		y += 15;
+		s << "hp : " << unit->getHitPoints();
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		y += 15;
+		s.str("");
+		s << "Dir x: " << unit->getDestination().x << " z: " << unit->getDestination().z;
+		renderBitmapString(300, y, (void *)font, s.str().c_str());
+		s.str("");
+	}
+	glPopMatrix();
+	resetPerspectiveProjection();
 }

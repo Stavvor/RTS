@@ -27,7 +27,7 @@ void SoundPlayer::update3DPos(const vec3& pos, const vec3& dir, vec3 doppler, ve
 void SoundPlayer::loadAllSounds()
 {
 	terran1 = engine->addSoundSourceFromFile("resources\\sound\\terran1.flac");
-	gatling = engine->addSoundSourceFromFile("resources\\sound\\gatling.wav");
+	gatling = engine->addSoundSourceFromFile("resources\\sound\\gatling.mp3");
 	//gatling->setDefaultVolume(0.5f); //TODO dopasowac glosnosc
 
 	//TODO dodawac dzwieki
@@ -53,28 +53,17 @@ void SoundPlayer::playSound(irrklang::ISoundSource* sound)
 	engine->play2D(sound);
 }
 
-void SoundPlayer::play3DSound(irrklang::ISoundSource* sound,vec3 pos, float soundRange, irrklang::ISound* snd)
+irrklang::ISound* SoundPlayer::play3DSound(irrklang::ISoundSource* sound,vec3 pos, float soundRange, irrklang::ISound* snd)
 {
-	if(snd==NULL)
+	
+	irrklang::vec3df position(pos.x, pos.y, pos.z);
+
+	snd = engine->play3D(sound, position, false, true);
+
+	if (snd)
 	{
-		irrklang::vec3df position(pos.x, pos.y, pos.z);
-			snd = engine->play3D(sound, position, false, true);
-			if (snd)
-			{
-				snd->setMinDistance(soundRange); // a loud sound
-				snd->setIsPaused(false); // unpause the sound
-			}
+		snd->setMinDistance(30.0f); // a loud sound
+		snd->setIsPaused(false); // unpause the sound
 	}
-	else
-	{
-		irrklang::vec3df position(pos.x, pos.y, pos.z);
-		if (snd->isFinished()) {
-			snd = engine->play3D(sound, position, false, true);
-			if (snd)
-			{
-				snd->setMinDistance(soundRange); // a loud sound
-				snd->setIsPaused(false); // unpause the sound
-			}
-		}
-	}
+	return snd;
 }

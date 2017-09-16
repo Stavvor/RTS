@@ -27,9 +27,10 @@ Unit::Unit()
 {
 }
 
-Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ICooldown, float Frange, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
+Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ICooldown, float Frange, unsigned int IhitPoints, float Fspeed,
+	unsigned int* weaponUpgrades, unsigned int* armorUpgrades, bool value)
 	:
-	Targetable(Stype, Vpos, IhitPoints, weaponUpgrades, armorUpgrades),
+	Targetable(Stype, Vpos, IhitPoints, weaponUpgrades, armorUpgrades,value),
 	name(Sname),
 	speed(Fspeed),
 	range(Frange),
@@ -51,8 +52,7 @@ Unit::Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigne
 	Targetable(Stype, Vpos, IhitPoints, armorUpgrades),
 	name(Sname),
 	speed(Fspeed),
-	range(Frange),
-	maxCooldown(ICooldown)
+	range(Frange)
 	{
 	upgrades = new Upgrades(0, armorUpgrades); //TODO mozna zamienic na NULL zeby bylo ladniej ale musze byc pewien ze utlityUnit nigdy nie sprobuje uzyc tego wskaznika
 	isPickedUp = false;
@@ -61,6 +61,11 @@ Unit::Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigne
 	cooldown = 0;
 	isMoving = false;
 	snd = NULL;
+}
+
+void Unit::miningOrder()
+{
+
 }
 
 //Unit::Unit(string Sname, string Stype, vec3 Vpos, unsigned int ImaxCooldown, unsigned int IhitPoints, float Fspeed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades)
@@ -83,6 +88,11 @@ unsigned Unit::getCooldown()
 	return cooldown;
 }
 
+float Unit::getSpeed()
+{
+	return speed;
+}
+
 void Unit::updateCooldown(unsigned int value)
 {
 	char const* name = "Test";
@@ -100,14 +110,12 @@ void Unit::updateCooldown(unsigned int value)
 	}
 	cooldown += value;
 	if (cooldown >= maxCooldown && this->getTarget() != NULL ) {
-		this->doAction();
-		//
-			soundPlayer->play3DSound(soundPlayer->gatling,this->getPosition(),10.0f,snd);//TODO dodac skladowa jednostki zasieg halasu..
-			if (snd)
-			{
-				irrklang::vec3df pos = { this->getPosition().x,this->getPosition().y,this->getPosition().z }; //TODO updatowanie pozycji mozna przenisc do onrender... albo menegera pozycji zeby bylo bardzie smooth
-				snd->setPosition(pos);
-			}
+			this->doAction();//TODO zrobic dzwiek
+							 snd = game->soundPlayer->play3DSound(game->soundPlayer->gatling, this->getPosition(), 10.0f, this->snd);//TODO dodac skladowa jednostki - zasieg halasu..
+							 //irrklang::vec3df pos = { this->getPosition().x,this->getPosition().y,this->getPosition().z }; 
+							 //TODO updatowanie pozycji mozna przenisc do onrender... albo menegera pozycji zeby bylo bardzie smooth
+							 //snd = game->soundPlayer->engine->play2D(game->soundPlayer->gatling, false, false);
+			//game->soundPlayer->playSound(game->soundPlayer->gatling);
 		cooldown = 0;
 	}
 	else if (cooldown >= 2 * maxCooldown)
@@ -187,6 +195,7 @@ bool Unit::targetInRange()
 	float distance = sqrt(pow((myPos.x - targetPos.x), 2) + pow((myPos.y - targetPos.y), 2) + pow((myPos.z - targetPos.z), 2));
 	if (distance<=range) return true;
 	else return false;
+
 }
 
 void Unit::goToMiningLocation()
@@ -242,4 +251,5 @@ void Unit::calculateVecAngle()
 
 void Unit::drawSelf()
 {
+	
 }

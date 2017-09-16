@@ -38,18 +38,30 @@ Targetable::Targetable(string Stype, vec3 Vpos, unsigned int IHitPoints, unsigne
 {
 	upgrades = new Upgrades(armorUpgrades);
 	isDead = false;
+	enemy = false;
 }
 
-Targetable::Targetable(string Stype, vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades, unsigned int* weaponUpgrades)
+Targetable::Targetable(string Stype, vec3 Vpos, unsigned int IHitPoints, unsigned int* armorUpgrades, unsigned int* weaponUpgrades, bool isEnemy)
 	:
 	Entity(Vpos),
 		hitPoints(IHitPoints),
 		maxHitPoints(IHitPoints),
-		type(Stype)
+		type(Stype),
+		enemy(isEnemy)
 	{
 		upgrades = new Upgrades(weaponUpgrades, armorUpgrades);
 		isDead = false;
 	}
+
+bool Targetable::isEnemy()
+{
+	return enemy;
+}
+
+void Targetable::setEnemy(bool v)
+{
+	enemy = v;
+}
 
 unsigned Targetable::getResources()
 {
@@ -75,6 +87,12 @@ void Targetable::takeDamage(unsigned int damageValue) {
 unsigned int Targetable::getHitPoints()
 {
 	return hitPoints;
+}
+
+float Targetable::getNormalizedHitPoints()
+{
+	float scaledValue = hitPoints / maxHitPoints;
+	return scaledValue;
 }
 
 void Targetable::attack(Targetable * target)
@@ -113,9 +131,13 @@ void Targetable::setTarget(shared_ptr<Targetable>)
 void Targetable::onDead()
 {
 	isDead = true;
-	for (int i = 0; i<targetedBy.size(); i++)
+	for (int i = 0; i < targetedBy.size(); i++)
 	{
 		targetedBy[i]->setTarget(NULL);
+	}
+	if (isEnemy())
+	{
+		player->grid->leave(floor(this->getPosition().x),floor(this->getPosition().z));
 	}
 	//TODO animacje
 }

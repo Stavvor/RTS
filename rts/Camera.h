@@ -1,5 +1,11 @@
 struct SCameraState {
-	float minHeight = 0.5f;
+	float minX = 35.0f;
+	float minZ = 35.0f;
+
+	float maxX = 297.0f;
+	float maxZ = 297.0f;
+
+	float minHeight = 1.0f;
 	float maxHeight = 25.0f;
 	vec3 pos; // pozycja kamery
 	vec3 dir; // kierunek patrzenia (wektor jednostkowy)

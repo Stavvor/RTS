@@ -15,11 +15,27 @@ public:
 	void updateProductionTime(unsigned int);
 	virtual void queueUnit(unsigned int* armorUpgrades, unsigned int* weaponUpgrades);
 	template<typename T>
-	void train(unsigned* weaponUpgrades, unsigned* armorUpgrades, unsigned time)
+	void train(unsigned* weaponUpgrades, unsigned* armorUpgrades, unsigned time, string SType, unsigned int Idamage,
+		unsigned int IAttackCooldown, float Frange, float FScanRange, string Sname, unsigned int IhitPoints, float Fspeed,bool value)
 	{
 		Unit* temp;
-		temp = new T("Infantry", 8, 50, 20, 7, "Soldier", getPosition(), 50, 0.5, weaponUpgrades, armorUpgrades); //TODO adjust parameters
+		auto pos = getPosition();
+		vec3 newPos = { pos.x, pos.y,pos.z };
+		temp = new T(SType, Idamage, IAttackCooldown, Frange, FScanRange, Sname, newPos, IhitPoints, Fspeed, weaponUpgrades, armorUpgrades,value); //TODO adjust parameters
 		//string name, string Stype, vec3 position, unsigned int ICooldoown, unsigned int hitPoints, float speed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades
+		this->getProductionQueue()->push(temp);
+		totalProductionTime = time;
+	}
+	//Unit(string Sname,string Stype, vec3 Vpos, unsigned int ICooldown, unsigned int IhitPoints, float Fspeed, float Frange, unsigned int* armorUpgrades)
+	template<typename T>
+	void trainUtility(unsigned* armorUpgrades, unsigned time, string Sname, string Stype, unsigned int Icooldown,
+		unsigned int IHitPoints, float speed, float range, float scanRange)
+	{
+		Unit* temp;
+		auto pos = getPosition();
+		vec3 newPos = { pos.x+6, pos.y,pos.z-20 };
+		temp = new T(Sname, Stype, newPos, Icooldown, IHitPoints, speed, range, scanRange, armorUpgrades); //TODO different constructors
+																												  //string name, string Stype, vec3 position, unsigned int ICooldoown, unsigned int hitPoints, float speed, unsigned int* weaponUpgrades, unsigned int* armorUpgrades
 		this->getProductionQueue()->push(temp);
 		totalProductionTime = time;
 	}
