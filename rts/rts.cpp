@@ -222,7 +222,6 @@ int main(int argc, char**argv) {
 	glutMouseWheelFunc(mouseWheel);
 	//TODO callbacki wszystkie interakcje jednostek ktore nie sa instantowe...
 	glutTimerFunc(17, OnTimer, 0);
-	glutTimerFunc(17, unitDetails, 0);
 	glutTimerFunc(17, actionTimer, 0);
 	glutTimerFunc(17, queueManager, 0);
 	glutTimerFunc(17, posManager, 0);
@@ -306,6 +305,8 @@ int main(int argc, char**argv) {
 	player->buildStructure<Headquarters>({ 65, 0, 60 });
 
 	//glutMainLoop();
+	cout<<"press \"X\" to start..."<<endl;
+
 	while (1)
 	{
 		glutMainLoop();
@@ -406,7 +407,8 @@ void OnKeyDown(unsigned char key, int x, int y) {
 				
 			for (auto building : player->getMyBuildings())
 			{
-				//player->trainUnit<MechT2>(building, 5, "mechanical", 16, 42, 25, 28, "mecht2", 120, 0.5,false);//TODO pass values for constructor
+				if (resourceManager->buildCommand(100, 50))
+					player->trainUnit<MechT2>(building, 5, "mechanical", 16, 42, 25, 28, "mecht2", 120, 0.5,false);//TODO pass values for constructor
 			}
 			break;
 		
@@ -517,7 +519,8 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	{
 		if (resourceManager->buildCommand(55, 10))
 		{
-			player->createWorker();//TODO FIX
+			if (resourceManager->buildCommand(50, 5))
+				player->createWorker();
 		}
 		break;
 	}
@@ -525,8 +528,8 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	{
 		for (auto building : player->getMyBuildings())
 		{
-
-			player->trainUtilityUnit<ReconPlane>(building, 5, "recon","flying", 25, 25, 10, 20, 25);
+			if (resourceManager->buildCommand(50, 15))
+				player->trainUtilityUnit<ReconPlane>(building, 5, "recon","flying", 25, 25, 10, 20, 25);
 		}
 		break;
 	}
@@ -1284,40 +1287,6 @@ void repairCommand(int a)
 	glutTimerFunc(500, repairCommand, 0);
 }
 */
-void unitDetails(int)
-{
-
-	cout << "X "<< Game::playerCamera.pos.x<< "Y "<<Game::playerCamera.pos.y<< "Z "<< Game::playerCamera.pos.z << endl;
-/*	cout <<"resources = "<< player->getResources() << endl; //TODO przetestowac
-	
-	int i = 0;
-	for(auto unit : player->getMyUnits())
-	{
-		cout << "unit[" << i << "] position " << unit->getPosition() ;
-		cout << "unit[" << i << "] destination " << unit->getDestination() << endl;
-		cout << "unit[" << i << "] dir " << unit->dir << endl;
-		cout << "unit[" << i << "] target " << unit->getTarget() << endl;
-		cout << "unit[" << i << "] minerals " << unit->getHasMinerals() << endl;
-		i++;
-	}
-	
-	i = 0;
-	for (auto buidling : player->getMyBuildings())
-	{
-		cout << "building[" << i << "] position " << buidling->getPosition() ;
-		cout << "building[" << i << "] hitpoints " << buidling->getHitPoints() << endl;
-		cout << "building[" << i << "] hitpoints " << buidling->getPosition() << endl;
-		i++;
-	}
-
-	cout << player->getResources() << endl;
-	cout << player->getEnergy() << endl;
-	
-	cout << player->getMyUnits().size();
-
-	glutTimerFunc(3000, unitDetails, 0);*/
-	glutTimerFunc(1000, unitDetails, 0);
-}
 
 void actionTimer(int a)
 {
@@ -1588,9 +1557,6 @@ void gameStatistics()
 		s << "hp : " << unit->getHitPoints();
 		renderBitmapString(300, y, (void *)font, s.str().c_str());
 		y += 15;
-		s.str("");
-		s << "Dir x: " << unit->getDestination().x << " z: " << unit->getDestination().z;
-		renderBitmapString(300, y, (void *)font, s.str().c_str());
 		s.str("");
 	}
 	glPopMatrix();

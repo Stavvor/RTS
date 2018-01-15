@@ -6,8 +6,8 @@ Player::Player(string Sname)
 	:
 	name (Sname)
 {
-	resources = 2000;
-	energy = 1000;
+	resources = 500000;
+	energy = 500000;
 	supply = 0;
 	weaponUpgrades = 0;
 	armorUpgrades = 0;

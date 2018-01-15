@@ -39,7 +39,7 @@ public:
 	}
 
 	template<typename T>
-	void Player::trainUnit(shared_ptr<Building> target,unsigned int buildTime, string SType, unsigned int Idamage, unsigned int IAttackCooldown,
+	void trainUnit(shared_ptr<Building> target,unsigned int buildTime, string SType, unsigned int Idamage, unsigned int IAttackCooldown,
 		float Frange, float FScanRange, string Sname, unsigned int IhitPoints, float Fspeed,bool value) {
 
 		//TODO how to choose building... static? control groups?
@@ -48,7 +48,7 @@ public:
 	}
 
 	template<typename T>
-	void Player::trainUtilityUnit(shared_ptr<Building> target, unsigned int buildTime, string Sname, string Stype,
+	void trainUtilityUnit(shared_ptr<Building> target, unsigned int buildTime, string Sname, string Stype,
 		unsigned int Icooldown, unsigned int IHitPoints, float speed, float range, float scanRange) {
 		//TODO how to choose building... static? control groups?
 		target->trainUtility<T>(&armorUpgrades, buildTime,Sname,Stype,Icooldown,IHitPoints,speed,range,scanRange);
