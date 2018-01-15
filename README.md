@@ -16,7 +16,6 @@ This is a classic RTS game - you have to  gather resources build an amry and the
 
 There are 2 primary resources - minerals and energy. Minerals can be mined and energy is produced in generators.
  
-Units are produced in factories. Workers are fully automated
 # Controls
 
 - camera & movement
@@ -67,4 +66,5 @@ Units are produced in factories. Workers are fully automated
     F - toggle friendly fire
 # TODOS
 I feel like Im done with the game, I might make some animations in the future so it feels more "alive". Maybe I will make some models for all units different units that are already implemented.
+
 I really enjoyed this project but I dont feel like writing another videogame anytime soon, however I'd like to implement multiplayer support and Im currently working on it.
