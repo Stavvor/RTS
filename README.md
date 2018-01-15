@@ -65,6 +65,6 @@ There are 2 primary resources - minerals and energy. Minerals can be mined and e
 
     F - toggle friendly fire
 # TODOS
-I feel like Im done with the game, I might make some animations in the future so it feels more "alive". Maybe I will make some models for all units different units that are already implemented.
+I feel like Im done with the game, I might make some animations in the future so it feels more "alive". Maybe I will make some missing models for all  units that are already implemented.
 
 I really enjoyed this project but I dont feel like writing another videogame anytime soon, however I'd like to implement multiplayer support and Im currently working on it.
