@@ -12,7 +12,7 @@ My first attempt at making a videogame.
 
 # Overview
 
-This is a classic RTS game - you have to  gather resources build an amry and then destroy your enemies.
+This is a classic RTS game - you have to  gather resources build an army and then destroy your enemies.
 
 There are 2 primary resources - minerals and energy. Minerals can be mined and energy is produced in generators.
  
